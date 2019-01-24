@@ -1,0 +1,20 @@
+%!TEX root = ./thesis.tex
+
+\chapter{Conclusion and future works}
+
+\section{Conclusion}
+The atmospheric condition models including the velocity profile, turbulent kinetic energy and turbulent dissipation rate profiles by Monin-Obukhov similarity theory are used as boundary conditions to reproduce horizontal homogeneous atmospheric surface layer. In both neutral and thermal stratified ABLs, the profiles at outlet boundary are successfully maintained and consistent with inlet profiles. It shows the effectiveness of the proposed model in simulating horizontal homogeneous atmospheric surface layer. Furthermore, the proposed model can simulate different levels of ABL turbulence kinetic energy.
+
+In the study of dense gas dispersion in neutral simulated ABL, a solver with variable turbulent Schmidt number is successfully validated in reproduced maximum gas concentration. SPM from simulation results are better than from the specified commercial software for gas dispersion FLACS. 
+
+In the study of LNG, a dense cold gas vapour dispersion in ABL, three ground heat transfer assumptions are simulated and compared with the validation data. The gas peak concentration is used as validation parameters. Adiabatic wall assuming zero heat flux from the ground to the gas cloud and fixed temperature model which assuming isothermal ground (ground temperature is constant). The real heat flux to the gas cloud should be in between these two cases. The other model assuming a fixed flux of heat to the gas cloud is also included. Adiabatic wall gave the closest prediction of gas peak concentration. This may be explained as the case had the largest heat flux from  ground to vapour cloud so it can compensate other source of heat addition to the cloud which is not considered in the simulation. The detail comparison with point-wise data showed that predictions at near-source point are rather conservative. The assumption of source term contributes largely in this error. The concentration peak in near source distance is quite conservative in comparison with validation data. The source modelling should be more well defined for better predictions. Statistical Performance Measures (SPMs) from the simulation results are compared with LES code FDS and specified dispersion code FLACS under Model Evaluation Protocol (MEP). 
+%%%%%%%%%%%%%
+\section{Contributions}
+Two equation turbulence models: standard $k-\epsilon$ and SST $k-\omega$ turbulence models are modified substantially using OpenFOAM to simulate neutral and thermal stratified ABL turbulence. The proposed model can simulate different levels of ABL turbulence kinetic energy. 
+
+The dispersion model taking into account buoyancy effect, variable turbulence Schmidt number, ground heat transfer is developed under OpenFOAM platform. The model is shown to accurately reproduce peak concentration in simulated neutral ABL. In field experiments of LNG dispersion, the model is shown to be over-predicted the buoyancy effect. The further investigation should be done to accurately predict peak concentration in this case.  
+
+\section{Limitations and Future works}
+The assumption of ABL surface layer steady profiles constrained the study to only RANS turbulent models. Turbulence is inherently unsteady, therefore, for more accurately solving atmospheric turbulence, Large Eddy Simulation (LES) is indeed a promising approach. Nevertheless, LES requires a more intensive computational cost, especially for large scale presenting in atmospheric flow. Another consideration is that boundary conditions used in LES should be carefully applied.
+
+In case of atmospheric variable buoyancy cold gas dispersion, e.g. LNG vapour dispersion in this study, a rigorous surface heat transfer model, which is a major heat source to the flow, is required. The transient behaviour of ground temperature due to contact with cold flow should be also taken into account in determining the heat transfer from ground to the cloud.  

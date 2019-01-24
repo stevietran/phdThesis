@@ -1,0 +1,196 @@
+%!TEX root = ./thesis.tex
+\graphicspath{{./Figs/LiteratureReview/}}
+% Acronym
+\nomtypeA{LES}{Large Eddy Simulations}
+% Neutral ABL
+\nomtypeR{$S_\epsilon$}{Source term in turbulent dissipation rate equation}{}
+\nomtypeR{$S_k$}{Source term in turbulent kinetic energy equation}{}
+
+\chapter{Literature Review}
+\section{Neutral Atmospheric Boundary Layer modelling}
+\subsection{Horizontally homogeneous boundary layer}
+The important task before modelling flows in ABL is obtaining equilibrium ABL, i.e. zero stream-wise gradients of all variables. For neutral atmospheric boundary layer, \textcite{Richards1993} proposed the appropriate boundary conditions of mean wind speed and turbulence quantities for the standard $k-\epsilon$ model. These profiles were derived assuming constant shear stress with height and applied for surface layer of ABL. These were used to model ABL surface layer as horizontally homogeneous turbulent surface layer (HHTSL). However, HHTSL was hard to achieved mostly due to the ground boundary conditions \cite{Yang2009}, which manifested in the decay of velocity profile due to a spike in the turbulent kinetic energy profile close to the ground. The consistency between wall boundary conditions, turbulence model with associated constants and also numerical schemes was shown to help to achieve HHTSL \cite{Jonathon2012, Parente2011, Yan2016}. Under HHTSL, the governing equations can be simplified as:
+\begin{equation} \label{eq:Richards1993_eqns}
+\begin{aligned}
+\nu_t \pdv{u(z)}{z} = \frac{\tau_w}{\rho} = u_*^2 \\
+\pdv{}{z} \left(\nu_t \pdv{u(k)}{z}\right) + S_k = 0\\	 
+\pdv{}{z} \left(\frac{\nu_t}{\sigma_{\epsilon}} \pdv{\epsilon}{z}\right) (C_{1\epsilon} - C_{2\epsilon})\frac{\epsilon^2}{k} + S_\epsilon = 0  
+\end{aligned}
+\end{equation}
+
+The inlet boundary conditions proposed by \textcite{Richards1993}, widely used in CFD study of atmospheric flow are:
+\begin{equation} \label{eq:Richards1993_inlet}
+\begin{aligned}
+u(z) &= \frac{u_{*}}{\kappa }\ln \frac{z+z_0}{z_0}\\
+k &= \frac{u_{*}^2}{\sqrt{C_\mu}}\\	 
+\epsilon &= \frac{u_{*}^3}{\kappa (z + z_0)}  
+\end{aligned}
+\end{equation}
+
+These profiles are assured a solution of Equation~(\ref{eq:Richards1993_eqns}), if the model constant, turbulent Prandtl number of the dissipation rate $\sigma_{\epsilon}$, is modified as:
+\begin{equation} \label{eq:Richards1993_model_constrain}
+\sigma_{\epsilon} = \frac{\kappa^2 }{(C_{\epsilon2}-C_{\epsilon1}) \sqrt C_\mu}
+\end{equation}
+
+Instead of altering model constants, \textcite{Pontiggia2009} derived the $\epsilon$ equation $z$-dependent source term from solution of Equation~(\ref{eq:Richards1993_inlet}):
+\begin{equation} \label{eq:epsSourcePont}
+S_\epsilon= \frac{\rho u_*^4}{(z+z_0)^2} \left[ \frac{(C_{\epsilon 2}-C_{\epsilon 1})\sqrt{C_\mu}}{\kappa^2} - \frac{1}{\sigma_{\epsilon}} \right] - \mu \frac{\rho u_*^3}{ 2 \kappa(z+z_0)^3}
+\end{equation}
+Under turbulence case, molecular viscosity is negligible, therefore the second term is usually ignored.
+
+Constant inlet turbulence kinetic energy proposed by \textcite{Richards1993} is subjected to many arguments. Since velocity field is limited affected by turbulence kinetic energy but the concentration field because if enhancing dispersion effect of turbulence. As noted by \textcite{Parente2011}, decreasing $k$ with height was shown in many wind tunnel test. \textcite{Yang2009} proposed new profile of $k$ and $\epsilon$ for standard $k-\epsilon$ model. $k$, $\epsilon$ are the non-linear function of height as:
+\begin{equation}
+\begin{aligned}
+k &=\frac{u_*^2}{C_\mu^{1/2}}\sqrt{C_1 \ln\left(\frac{z+z_0}{z_0}\right)+C_2}\\
+\epsilon &=\frac{u_*^3}{\kappa (z+z_0)}\sqrt{C_1 \ln\left(\frac{z+z_0}{z_0}\right)+C_2}\\
+\end{aligned}
+\end{equation} 
+$C_1=-0.17$ and $C_2=1.62$ are constants fitted from their wind tunnel experiments. They also proposed modified standard model constants in Table~\ref{tab:kEpsModifiedYang2009}.
+\def\rowWidth{0.06}
+\begin{table}[htbp]
+	\caption{The modified $k-\epsilon$ model constants by \textcite{Yang2009}} \label{tab:kEpsModifiedYang2009}
+	\centering
+	\begin{tabular}{p{\rowWidth\textwidth}p{\rowWidth\textwidth}p{\rowWidth\textwidth}p{\rowWidth\textwidth}p{\rowWidth\textwidth}}  
+		\toprule
+		$C_{1\epsilon}$	& $C_{2\epsilon}$ & $C_{\mu}$ & $\sigma_k$ & $\sigma_\epsilon$ \\
+		\midrule
+		1.5 & 1.92 	& 0.028 & 1.67 & 2.51\\
+		\bottomrule
+	\end{tabular}
+\end{table}
+
+\textcite{Parente2011} presented an elaborate procedure to ensure the consistency for arbitrary inlet profile of turbulent kinetic energy $k$. Instead of altering model constants as \textcite{Yang2009}, the effect of non-constant $k$ on momentum and $\epsilon$ equation can be characterised by deriving equation for $C_\mu$:   
+\begin{equation}
+C_\mu(z) = \frac{u_*^4}{k(z)^2}
+\end{equation} 
+Source terms are added to $k$ and $\epsilon$ transport equations to ensure equilibrium condition:
+\begin{equation}
+\begin{aligned}
+S_k &= \frac{\rho u_* \kappa}{\sigma_k} \pdv{}{z}\left((z+z_0) \pdv{k}{z}\right)\\
+S_\epsilon &= \frac{\rho u_*^4}{(z+z_0)^2} \left[ \frac{(C_{\epsilon 2}-C_{\epsilon 1})\sqrt{C_\mu}}{\kappa^2} - \frac{1}{\sigma_{\epsilon}} \right]\\
+\end{aligned}
+\end{equation}
+
+\textcite{Richards2011} revisited the problem of modelling the HHTSL by deriving the inlet profiles directly from the conservation and equilibrium equations. This allows various inlet profiles can be specified by varying the turbulence models constants. For standard $k-\epsilon$ models, the inlet profiles of velocity and turbulence properties are the same as Equation~(\ref{eq:Richards1993_inlet}). However they suggested to change the von Karman constant according to model constants as:
+\begin{equation} \label{eq:vonKarman_constrain}
+\kappa_{k-\epsilon} = \sqrt{(C_{\epsilon2}-C_{\epsilon1}) \sigma_{\epsilon} \sqrt C_\mu}
+\end{equation}
+Using the standard $k-\epsilon$ model constants (Table \ref{tab:kEpsCons}), we can yield $\kappa_{k-\epsilon} = 0.433$. 
+
+\textcite{Hargreaves2007} had shown that zero gradient velocity at the top boundary resulted in a decay of velocity downstream, due to the extraction energy at wall due to wall shear stress. A driving shear stress, zero flux of turbulent kinetic energy and a flux of dissipation rate $\epsilon$ are to be imposed at the upper boundary:  
+\begin{equation}\label{eq:RichardsTopBCs}
+\begin{aligned}
+\frac{\dd u}{\dd z}&= \frac{u_*}{\kappa z}\\
+\frac{\mu_t}{\sigma_{\epsilon}} \frac{d \epsilon}{dz} &= -\frac{\rho u_{*}^4}{\sigma_{\epsilon} z}\\
+\end{aligned}
+\end{equation}
+
+For $k-\omega$ models, the specific dissipation $\omega$ is solved instead of dissipation rate $\epsilon$. Profiles of $U$ and $k$ are the same, except the new effective von Karman constant is $\kappa_{k-\omega}=0.408$. Profiles for $\omega$ has expression of:
+\begin{equation} \label{eq:hhtslOmeProfile}
+\omega = \frac{u_{*}}{C_{\mu}^{1/2} \kappa_{k-\epsilon} z}
+\end{equation}
+
+Similarly to the $k-\epsilon$ turbulence models, a flux of $\omega$ should be imposed at top boundary:
+\begin{equation}
+{\mu_t} \frac{d \omega}{dz} = -\frac{\rho u_{*}^2}{C_{\mu}^{1/2} z}
+\end{equation}
+
+In present of obstacles, \textcite{Richards2011} had shown that eddy viscosity models like $k-\epsilon$ or $k-\omega$ resulted the over-prediction of stagnation pressures, while Reynolds stress model (RSM) \cite{Gibson1978} was significantly reduced this issue. 
+
+\subsection{Boundary conditions}
+At the outlet boundary, the flow is assumed fully developed and unidirectional. All flow variables are supposed to be constant in this boundary. The placement of this boundary, therefore, is very important. As the placement is so close to the source, significant errors can be made due to the propagation of the source to other boundaries. Otherwise, if the placement is so far, the computational time will increase dramatically.
+
+The top and side of the computational domain are external boundaries representing the far fields of flow. If a constant pressure is applied in these boundaries, this may alter the inlet wind profile in case prescribed pressure is not matched with the boundary velocity \cite{Luketa-Hanlin2007}. The zero gradient boundary condition, which set normal velocity to zero and all others variables are set equal to the inner values, or symmetry condition can be used at the top and side boundaries to reserve the wind profile and eliminate the effect of changing the inlet profiles. 
+
+At the wall boundary, two models usually applied for turbulence properties are Low Reynolds number (LRN) turbulence model \cite{Jones1972} and high Re number (HRN) with wall function \cite{Launder1974}. HRN models are usually less accurate, and also sensitive to the mesh resolution close to the wall. Adaptive wall functions were developed to overcome the restriction HRN, which is the first point above the wall to lie in the logarithmic layer \cite{Kalitzin2005}. \textcite{Backar2017} proposed a hybrid approach, so called numerical wall function, where wall adjacent cells are divided into sub-grid and governing equations are solved with appropriate boundary conditions in this sub-grid.
+
+\section{Stratified Atmospheric Boundary Layer modelling}
+Either the Reynolds Averaged Navier–Stokes (RANS) equations or Large Eddy Simulations (LES) \cite{Moeng1984,Saiki2000} are used for stratified atmospheric turbulence modelling. RANS turbulence models are still widely used in practical approach to overcome boundary conditions sensitivity and computational intensive of the LES. 
+
+Thermal stratification results from heat flux of the ground have significant effects to the buoyancy and ABL turbulence. For standard $k-\epsilon$ model, the source term that accounts for gravity effects in $\epsilon$ equation can be written as \cite{Alinot2005}: 
+\begin{equation}
+S_{\epsilon b} =  C_{\epsilon 1}(1-C_{\epsilon 3}) \frac{\epsilon}{k} G_b
+\end{equation}
+$G_b$ is turbulent kinetic energy production source term due to buoyancy:
+\begin{equation}
+G_b = \beta g_i \frac{\mu_t}{\sigma_T}  \left( \pdv{T}{x_i} - \frac{g_i}{c_p} \right) 
+\end{equation}
+
+For stable stratified ABL, turbulent kinetic energy $k$ and dissipation rate $\epsilon$ can be derived from Monin-Obukhov similarity theory profiles and solving the $k-\epsilon$ equation \cite{Luketa-Hanlin2007}. For the height $z \le 0.1h_{ABL}$:
+\begin{equation} \label{eq:MO-turl-stab-surface}
+\begin{aligned}
+k &= 6 u_{*}^2\\	 
+\epsilon &= \frac{u_{*}^3}{\kappa z}\left( 1.24 +4.3 \frac{z}{L_{MO}} \right)  
+\end{aligned}
+\end{equation}
+
+For the height $z>0.1h_{ABL}$:
+\begin{equation} \label{eq:MO-turl-stab-above}
+\begin{aligned}
+k &= 6 u_{*}^2 \left( 1-\frac{z}{h_{ABL}} \right)^{1.75}\\	 
+\epsilon &= \frac{u_{*}^3}{\kappa z}\left( 1.24 +4.3 \frac{z}{L_{MO}} \right) \left( 1-0.85\frac{z}{h_{ABL}} \right)^{1.5} 
+\end{aligned}
+\end{equation}
+
+Under unstable ABL, the heat flux from the ground and height of ABL play an important role in increasing the turbulence in the air flow. This vertical flow can be characterised using convective velocity scale Equation~(\ref{eq:convective-scaling}). Turbulent kinetic energy $k$ and dissipation rate $\epsilon$ under unstable ABL can be defined in Equation~(\ref{eq:MO-turb-unstab-surface}) for $z \le 0.1h_{ABL}$ and Equation~(\ref{eq:MO-turb-unstab-above}) for $z > 0.1h_{ABL}$.
+\begin{equation} \label{eq:MO-turb-unstab-surface}
+\begin{aligned}
+k &= 0.36 w_{*}^2 + 0.85 u_{*}^2 \left( 1-3\frac{z}{h_{ABL}} \right)^{2/3}\\	 
+\epsilon &= \frac{u_{*}^3}{\kappa z} \left( 1 + 0.5 \abs{\frac{z}{L_{MO}}} ^{2/3} \right)^{1.5} 
+\end{aligned}
+\end{equation}
+
+\begin{equation} \label{eq:MO-turb-unstab-above}
+\begin{aligned}
+k &=w_{*}^2 \left[ 0.36 + 0.9\left( \frac{z}{h_{ABL}} \right)^{2/3}\left( 1-0.8\frac{z}{h_{ABL}} \right)^{2} \right]\\	 
+\epsilon &= \frac{w_{*}^3}{h_{ABL}} \left( 0.8-0.3\frac{z}{h_{ABL}} \right)
+\end{aligned}
+\end{equation}
+
+In order to simulate atmospheric stratification effects, \textcite{Alinot2005} changed model constants (Table~\ref{tab:kEpsConsAlinot2005}) to achieve a better agreement with atmospheric profile from Monin-Obukhov theory.
+\begin{table}[htbp]
+	\caption{The standard $k-\epsilon$ model constants proposed by \textcite{Alinot2005}} \label{tab:kEpsConsAlinot2005}
+	\centering
+	\begin{tabular}{ccccc}  
+		\toprule
+		$C_{1\epsilon}$	& $C_{2\epsilon}$ & $C_{\mu}$ & $\sigma_k$ & $\sigma_\epsilon$ \\
+		\midrule
+		1.176 & 1.92 & 0.0333 & 1 & 3.4 ($L_{MO} > 0$)\\
+		&  &  & & -4.4 ($L_{MO} < 0$)\\
+		\bottomrule
+	\end{tabular}
+\end{table}
+
+Effects of atmospheric stratification on dense gas dispersion CFD simulations was addressed by \textcite{Pontiggia2009a}. The consistency between Monin-Obhukov profiles with $k-\epsilon$ model is obtained by addition of z-dependent source term $S_\epsilon$ to the $\epsilon$ transport equation. Under neutral atmospheric stability:
+\begin{equation}
+S_\epsilon(z) = \frac{\rho u_*^4}{z^2} \left[ \frac{(C_{\epsilon 2}-C_{\epsilon 1}) \sqrt{C_\mu}}{\kappa^2} - \frac{1}{\sigma_{\epsilon}}\right] -\mu \frac{u_*^3}{2\kappa z^3}
+\end{equation}
+Under stable condition:
+\begin{equation} \label{eq:stablePontiggiaEpsSource}
+S_\epsilon(z) = \frac{\rho u_*^4}{z^2} \left[ \frac{(C_{\epsilon 2}-C_{\epsilon 1}) \sqrt{C_\mu}}{\kappa^2} \Phi_\epsilon^2 \sqrt \frac{\Phi_\epsilon}{\Phi_m} - \frac{1}{\sigma_\epsilon}\left( \frac{2}{\Phi_m} - \frac{1}{\Phi_m^2} + \frac{T_*}{\kappa T} \right)\right] -\mu \frac{u_*^3}{2\kappa z^3}
+\end{equation}
+
+In case of cold dense gas dispersion, heat exchange of gas cloud and the ground surface is a significant heat transfer process. Forced heat convection model was used to find this heat flux \cite{Nielsen1999}:
+\begin{equation}
+q_s=h_{f} (T_s - T_f)
+\end{equation}
+$h_f$ is the local heat transfer coefficient, $T_f$ is the fluid temperature.
+\textcite{Kovalets2006} used mixed coefficients between force heat convection and natural convection.
+
+Several studies used CFD commercial software such as FLUENT; as well as open-source software such as OpenFOAM to simulate ABL layers. \textcite{Hargreaves2007} have shown that applying at fixed variable fluxes at top boundary is difficult in general CFD software and usually replaced by zero gradient (no shear stress), however this will result a decaying boundary layer. They also highlighted different approaches of modelling near wall region can lead to significantly unexpected results especially when using general CFD software. Wall function applied for atmospheric flow is necessarily modified as the standard wall function is based on experiments of sand grain roughed pipe \cite{Blocken2007} and wind engineering roughness length $z_0$ is far from similar to this kind of roughness. \textcite{Pieterse2013} used STAR-CCM+ commercial code to simulate thermally stratified ABL with the standard $k-\epsilon$ and SST $k-\omega$ turbulence model.
+
+\textcite{Flores2013a} used Detached Eddy Simulation (DES) technique, which incorporates RANS models in near wall region and LES model in the rest, to simulate atmospheric wind circulation in open pit. The simulation takes in to account effects of buoyancy, stratification and complex geometry. A quasi-compressible approximation (treating density as explicit variable) was applied to incorporate stratification effect. \textcite{Riddle2004a} simulated neutrally stable atmospheric boundary layer with RSM turbulence model. 
+
+\section{CFD simulation of dense gas dispersion}
+Value of turbulent Schmidt number $Sc_t$ are shown to have significant effect on dense gas dispersion concentration. Using wind tunnel data, \textcite{Mokhtarzadeh-Dehghan2012} reported that $Sc_t$ was related with flow thermal stability, which is increased from 0.5 to 2.3 for the flows with Richardson number from 0.1 to 16.
+
+Several studies in literature of atmospheric dense gas dispersion using CFD approach adopted commercial software such as ANSYS fluent \cite{Gavelli2008,Zhang2015,Ikealumba2016,Meroney2012,Labovsky2011}, ANSYS CFX \cite{Sklavounos2004}, FLACS \cite{Hanna2004,Hansen2010a,Schleder2015} as well as open-source software such as OpenFOAM \cite{Mack2013, Fiates2016,Fiates2016a}, FDS \cite{Mouilleau2009,Ryder2004}. \textcite{Hansen2010a} validated FLACS in all tests in model evaluation database of LNG vapour dispersion. These include both wind tunnel test as well as field tests.
+
+Several turbulence models were tested for dense gas dispersion problem. \textcite{Mack2013} used standard $k-\epsilon$ model with OpenFOAM solver \bera{reactingFoam}, to simulate wind tunnel test case \bera{DAT632}, which is the gravity driven flow of heavy gas in slope terrain. Different treatments of buoyancy term in $\epsilon$ equation are investigated. It was shown that standard $k-\epsilon$ is able to predict turbulence damping due to vertical negative density gradient. \textcite{Gavelli2008} applied RSM model to account for directional effect of Reynold stress field (using standard $k-\epsilon$ model as initial guess of turbulence) to simulate \bera{Falcon1} field test. \textcite{Gant2014} simulated \ce{C02} field test with realizable $k-\epsilon$ model. Different RANS models were also tested for dense gas flow over obstacle \cite{Sklavounos2004}. \textcite{Tauseef2011} used realizable $k-\epsilon$ for modelling two Thorney Island test cases.
+
+\section{Concluding remarks}
+From the investigation of literature, modifications of general CFD are required to successfully simulate the ABL turbulence. These was done intensively in commercial proprietary software. But little works were done in open-source code like OpenFOAM. The modification of general code should be done to successfully apply OpenFOAM in simulating ABL flows.  
+
+Ensuring accurate description of the ABL is an important task in any ABL flow study. This can be done by simulating the horizontally homogeneous ABL flow prior of dispersion study. Either the Reynolds Averaged Navier–Stokes (RANS) equations or Large Eddy Simulations (LES) are used for atmospheric turbulence modelling. RANS turbulence models are still widely used in practical approach to overcome boundary conditions sensitivity and computational intensive of the LES. Neutral and thermal stratified ABL should be taken into account to simulate ABL turbulence.
+
+Turbulent Schmidt number $Sc_t$ had significant effect on ABL dense gas dispersion concentration \cite{Mokhtarzadeh-Dehghan2012}. Therefore, the solver should be able to take $Sc_t$ as input parameter. In case of LNG vapour dispersion, buoyancy effect and ground heat transfer are two important factors. LNG vapour density changes with its cloud temperature, therefore it behaves as dense gas in low temperature but as buoyant gas at higher temperature. The solver should take into account buoyancy effect in this situation.

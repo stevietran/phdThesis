@@ -1,0 +1,166 @@
+%!TEX root = ../thesis.tex
+
+\graphicspath{{Figs/BurroFigs/}}
+
+\chapter{Numerical algorithm}
+\subsection{Simulations of Burro 8 test} 
+As the continuous spill of LNG in Burro 8 test, a transient simulation is employed. Initial values of all nodes in the domain must be specified prior to the simulation. These values are gained from a steady simulation of atmospheric condition before the spill.
+
+The steady simulation uses the atmospheric inlet specified by Monin–Obukhov similarity theory. Two different turbulent model: standard $k-\epsilon$ with modifications and realizable $k-\epsilon$ are used to study the ability to simulate the atmospheric boundary of each model.
+
+The transient simulation is divided into two steps. During the spill duration, from the time of zero to the time of \SI{107}{\second}, the LNG inlet is specified as in~\ref{sec:gas-inlet}. After that, the inlet is treated as the solid wall boundary.
+
+To study the effect of turbulent intensity in the gas inlet, different value of turbulent intensity listed Table 9 will be used. The effect on the distance to LFL of these simulation will be recorded.
+
+Three basic models of heat transfer from the ground in Table 10 will be simulated and compared with the point wise concentration profile and temperature profile from the experimental data of Burro 8.
+
+\paragraph{Domain and grid generation}
+To investigation the effects of the mesh on the solution, three different meshes which the number of nodes vary with the factor of two are compared. The best mesh achieved will then be used for further study. 
+
+A coarse mesh can be used to make the exploratory simulations to determine the adequately domain size \cite{Luketa-Hanlin2007}. The effect of the domain size to the gas concentration is observed to choose the sufficient domain for further study. The flow can be closely assumed symmetric, only half of the flow will be modelled. However, the symmetric plane of the flow do not coincide with the centreline of instrument array. Therefore, some conversion should be made when comparing the point-wise data of the simulation to the measurement. Equation (3.3)can be used for this purpose, where $\theta_{wind}$ is the deflection angle between the wind direction and the centreline of instrument array. The domain of (950, 500, 50) is used for the simulation of Burro tests.  The computational domain can be named by surfaces: pond area (gas vapour inlet), near-pond area (used for create a finer mesh region where there is an interaction between ambient air and gas vapour), ground, top boundary, side boundary, symmetry, inlet and outlet as Figure~\ref{fig:Domain} for ease of meshing process. 
+
+\begin{figure}[htbp]
+	\centering
+	\includegraphics[width=0.8\textwidth]{Domain.png}
+	\caption{The computational domain} \label{fig:Domain}
+\end{figure}
+
+The suitable type of the mesh majorly depends on the type of physics solved. For the dispersion of dense gas cloud simulation, structured mesh with hexahedral cells is proven to be much more computationally effective than unstructured mesh using tetrahedral cells \cite{Giannissi2013}. The mesh can be shown in Figure~\ref{fig:Mesh}.
+
+\begin{figure}[htbp]
+	\centering
+	\includegraphics[width=0.8\textwidth]{Mesh.png}
+	\caption{The mesh} \label{fig:Mesh}
+\end{figure}
+
+The adequate number of nodal points using for the study can be determined using the mesh independence study. Successive grids are used for the simulation of the flow and the results are compared to see the effect of differencing grids. In case the resulting solution cannot be achievable due to the very large mesh, the Richardson’s extrapolation can be used to estimate the exact solution. \cite{Luketa-Hanlin2007}
+
+The mesh independence on concentration of methane is tested using two mesh, the later mesh have double refinement in the pond area. Mesh statistics and quality is recorded in Table 8
+
+\subsection{Boundary conditions}
+\paragraph{Atmospheric inlet boundary}
+
+Monin-Obukhov similarity theory is used to specify the wind velocity and temperature profile at the inlet. The velocity profile is calculated from Equation~\ref{eq:MO-velocity}. All required meteorological parameters are referred to Table~\ref{tab:Burro-meteo-params}.
+
+\begin{equation}
+u(z)=1.58 + 0.185\ln(z)+0.056z
+\end{equation}
+
+Using Equation~\ref{eq:MO-temperature}, the temperature profile is:
+\begin{equation}
+T(z) = 32.66+0.3625\ln(z)+0.11z
+\end{equation}
+
+Profile of momentum diffusivity $K_m$ and heat diffusivity $K_h$:
+\begin{equation}
+k_m = K_h = \frac{0.0296z}{1+0.303z}
+\end{equation}
+
+Calculation of the height of the atmospheric boundary layer using , $h_{ABL}=48 \si{\meter}$ . Using as the parameter for $k-\epsilon$ model, the profile of turbulent production rate k and dissipation rate $\epsilon$ can be calculated using Equation~\ref{eq:MO-k} and~\ref{eq:MO-epsilon}
+\[
+k = 
+\begin{cases} 
+0.033 					& (h \le 4.8) \\
+0.033 \left(1-z/48\right)^{1.75}  	& (h>4.8)
+\end{cases}
+\]
+
+\[
+\epsilon = 
+\begin{cases} 
+\num{2.6e-4}+\num{1.24e-3}/z 				& (h \le 4.8) \\
+(\num{2.6e-4}+\num{1.24e-3}/48)(1-0.85z/48)^{1.5}   	& (h>4.8)
+\end{cases}
+\]
+
+\paragraph{Vapour gas inlet} \label{sec:gas-inlet}
+Vapour gas inlet condition is usually obtained from separate source term modelling. There is not much information about the vaporisation of LNG from the experimental data. Therefore, uncertainty arises at the setting of this condition. 
+
+Burro 8 test was designed to maximize the vaporisation rate of LNG. Therefore, we can estimate the formation LNG vapour as equal to the spill rate of LNG. The velocity of LNG vapour, used as the inlet velocity in a simulation, thus is determined by equation:
+
+Where the natural gas density $\rho_{NG}=1.76$ $Kg/m^{3}$ at the spill temperature 111 K. The density of LNG $\rho_{LNG}=424.1$ $Kg/m^{3}$ based on \cite{Zhang2015}.
+
+The velocity of LNG is calculated from the spill rate and the pool area calculated using data from with the assumptions made in chapter 3.1. The natural gas inlet velocity is found to be $v_{NG}=0.1 m/s$. 
+
+For other circumstances, $\rho_{LNG}$ in equation (3.5) can be seen as the mass flux of LNG or the LNG vaporization rate. (Luketa-Hanlin, 2006) reviewed a number of experiments conducting to estimate the LNG vaporization rate of the spill on water, the range of this value varied between approximately \SIrange[range-units=single]{0.029}{0.195}{\kilogram\per\square\meter\per\second}. In the case of Burro 8, the simulated vaporisation rate is \SI{0.0426}{\kilogram\per\square\meter\per\second}
+
+The continuous release of LNG demands the transient simulation. The spill duration is calculated from the spill volume and the spill rate. The duration of LNG spill in Burro 8 test is 107 $s$.
+
+For turbulent modelling, the values of k and $\epsilon$ above the pool can be approximated using the length scale, D and a turbulent intensity $T_i=1-10 \%$.  The length scale, D, is the pool radius in this simulation.
+\begin{equation}
+k=\frac{3}{2}\left(v_{NG}T_i\right)^2
+\nonumber
+\end{equation}
+
+\begin{equation}
+\epsilon=C_\mu^{3/4}\frac{k^{3/2}}{0.07D}
+\nonumber
+\end{equation}
+
+Turbulent intensity is the ratio of root-mean-square of the velocity fluctuations and the mean flow velocity. Low turbulent flow has value of turbulence intensity of 1\% or less. The low-turbulence wind tunnels test can have the value of free-stream turbulence intensity as low as 0.05\%. Turbulence intensities greater than 10\% are used in high turbulent flows. A good estimate of the turbulence intensity at the inlet boundary is usually obtained from external, measured data. As this value was not available in the experiment data, the sensitivity analysis should be performed on the value of the turbulent intensity to be ascertained about its effect on the result. Different values of inlet turbulent intensity are used to investigate its effect in the distance to LFL. These values are listed in Table below:
+
+\begin{table}[h!]
+	\caption{Setting of turbulence intensities} \label{tab:turb-intens-set}
+	\centering
+	\begin{tabular}{rrrr}  
+		\toprule
+		& Case 1	& Case 2	& Case 3		\\
+		\midrule
+		Turbulent intensity (\si{\percent}) 		& 1 	& 3 	& 10 	\\
+		\bottomrule
+	\end{tabular}
+\end{table}
+
+\paragraph{Wall boundary}
+In Fluent, two roughness parameters, i.e. roughness height $z_0$ and roughness constant, $C_s$ are used to model the roughness effect. From experiment data, $z_0=\SI{0.0002}{\metre}$. A proper roughness constant is dictated mainly by the type of given roughness. The default roughness constant was retained $C_s=0.5$, which indicating tightly-packed, uniform sand-grain.
+
+Wall roughness value affects drag (resistance), heat and mass transfer on the wall. $f_r$ quantifies the shift of the intercept due to roughness effects. Non-dimensional roughness height
+\begin{equation}
+U^*=\frac{1}{\kappa}\ln(Ey^*)-\Delta B 
+\nonumber
+\end{equation}
+
+\begin{equation}
+\Delta B = \frac{1}{\kappa}\ln(f_r)
+\nonumber
+\end{equation}
+
+\begin{equation}
+K_s^{+} = \frac{\rho K_s u^*}{\mu}
+\nonumber
+\end{equation}
+
+\begin{equation}
+u^* = C_{\mu}^{1/4}k_p^{1/2}
+\nonumber
+\end{equation}
+
+ANSYS fluent offer the wide range of heat transfer models to simulate to heat addition from the substrate to the vapour cloud. Convective heat transfer boundary condition calculates the heat flux to the wall using external heat transfer coefficient $h_{ext}$ and external heat sink temperature $T_{ext}$ as:
+\begin{equation}
+q_s = h_{ext}(T_ext-T_w)
+\nonumber
+\end{equation}
+
+Wall temperature boundary assume a constant temperature of wall, then the heat flux to the wall can be computed in the similar manner to heat conduction as below, $h_f$ is the local heat coefficient, $T_f$ is the fluid temperature.
+\begin{equation}
+q_s = h_{f}(T_w-T_f)
+\nonumber
+\end{equation}
+
+Thermal wall boundary condition can be modelled as adiabatic wall, which ignoring the heat transfer effect from the ground. However, the sustainable heat adding to the vapour cloud is from the substrate. Heat flux from the ground should be taken into account. Convective and wall temperature models are used to study the effectiveness of heat addition to the cloud from the ground. There is an analogy between equation (3.6) and reported wall heat transfer equation (3.2), so $h_{ext}$ and $T_{ext}$ are used using reported data. The constant $T_w$ used for wall temperature model is chosen as the ambient air temperature. 	
+
+\paragraph{Outlet}
+The boundary condition is used as “out flow”. It assumes the flow is fully developed, unidirectional. All flow variables are supposed to be constant in this boundary. The placement of this boundary, therefore, is very important. As the placement is so close to the source, significant errors can be made due to the propagate of the source to other boundaries. Otherwise, if the placement is so far, the computational time will increase dramatically.
+Top and side boundaries
+Top and side boundaries represents the far field boundaries of the flow. However, when there is a change in the inlet condition, the constant pressure in these boundary cannot assure the desired velocity in these boundaries, which should be compatible with the wind profile at the inlet (Luketa-Hanlin et al., 2007).  The symmetry boundary condition, the normal velocity is zero and all others variables are set equal to the flow value. This condition emerged to fit well to the top and side boundaries which can reserve the wind profile to and eliminate the effect of the change of the inlet boundaries.
+
+\paragraph{Numerical Schemes}
+\begin{itemize}
+	\item First order implicit discretization: VOF equation, time discretization
+	\item QUICK: Energy, Momentum equation
+	\item PRESTO: Interpolation of pressure
+	\item  PISO: solving algorithm
+\end{itemize}
+
+\paragraph{Solving linear system} 
+Preconditioned bi-conjugate gradient method with incomplete-Cholesky preconditioner \textcite{Flores2013a}

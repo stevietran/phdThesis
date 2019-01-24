@@ -1,0 +1,89 @@
+\section{Dense gas dispersion in obstructed terrain}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Falcon series}
+The Falcon series were conducted by LLNL in 1987. These comprises 5 large-scale LNG spill tests aiming at evaluating the effectiveness of impoundment walls as a mitigation technique for accidental releases of LNG. LNG was spilled onto a rectangular water pond (60m x 40m). The evaporation rate could be roughly equivalent to the spill flow rate as the designed recirculation system was involved to maximize the evaporation process \cite{Gavelli2008}. LNG was supplied to the pond through 4 pipes, fitted with 0.11m diameter orifices and spaced at 900 intervals. The vapour fence, about 8.7m high, surrounded the water pond of a total area of 44m x 88m. The billboard of 13.3m tall, 17.1m wide was used to simulate the effect of a storage tank or other obstruction. The terrain was flat and the atmospheric condition was stable or neutrally stable. 
+
+Three Falcon tests included in MEP, Falcon 1, Falcon 3 and Falcon 4 are simulated in OpenFOAM to examine the effective of proposed models in simulating field LNG dispersion in present of obstacles.
+
+\subsection{Boundary conditions}
+\paragraph{Atmospheric inlet boundary}
+Monin-Obukhov similarity theory is used to specify the wind velocity and temperature profile at the inlet. The velocity profile is calculated from Equation~\ref{eq:MO-velocity}. All required meteorological parameters:
+\begin{table}[h!]
+	\caption{Falcon tests meteorological parameters} \label{tab:falcon_params}
+	\centering
+	\begin{tabular}{lrrr}
+		\toprule
+		& Falcon 1	& Falcon 3	& Falcon 4		\\
+		\midrule
+		Stability & G & D & D-E \\
+		$L$		& 4.96 & -422 & 69.4	\\
+		$u_*$	& 0.061 & 0.305 & 0.369	\\
+		$T_*$	& 0.058 & -0.018 & 0.152	\\
+		$z_0$ 	& 0.008 & 0.008 & 0.008 \\
+		\bottomrule
+	\end{tabular}
+\end{table}
+
+\paragraph{Vapour gas inlet}
+Vapour gas inlet condition is usually obtained from separate source term modelling. There is not much information about the vaporisation of LNG from the experimental data. Therefore, uncertainty arises at the setting of this condition. 
+
+Mass flux of LNG or the LNG vaporization rate is used to derive source term of LNG spill. \textcite{Luketa-Hanlin2007} reviewed a number of experiments conducting to estimate the LNG vaporization rate of the spill on water, the range of this value varied between approximately \SIrange[range-units=single]{0.029}{0.195}{\kilogram\per\square\meter\per\second}. In the case of Burro test, the simulated vaporisation rate is assumed to be $\dot{m} = $\SI{0.167}{\kilogram\per\square\meter\per\second}. The spill diameter is derived from this vaporization rate, reported spill mass $m$ and duration $\delta t$:
+\begin{equation}
+D = \sqrt{\frac{4m}{\pi \dot{m} \delta t}}
+\end{equation}
+LNG spill variables used in simulation are tabulated in Table~\ref{tab:burro_releaseVar}.
+\begin{table}[h!]
+	\caption{Falcon test spill condition} \label{tab:falcon_releaseVar}
+	\centering
+	\begin{tabular}{rrrr}  
+		\toprule
+		& Falcon 1	& Falcon 3	& Falcon 4		\\
+		\midrule
+		Vaporization rate (\si{\kilogram\per\square\meter\per\second}) & 0.167 & 0.167 & 0.167 \\
+		Spill mass (\si{\kilogram}) 		& 28074 	& 21435 	& 18984  	\\
+		Spill duration (\si{\second}) 		& 131 	& 154 	& 301  	\\
+		Spill pool diameter (\si{\meter}) 		& 19.5 	& 16.0 	& 10.8 	\\
+		\bottomrule
+	\end{tabular}
+\end{table}
+
+\subsection{Results and Discussion}
+\subsubsection{Arcwise prediction}
+Maximum concentration at four arcwise sensor arrays at $50 m$, $150 m$ and $250 m$ of three Falcon tests are compared with experimental data. Prediction of maximum concentration are best for Falcon 4 test.
+
+\begin{figure}[htbp]
+	\centering
+	\begin{subfigure}[]{0.49\textwidth}
+		\includegraphics[width=\textwidth]{Falcon1ConMax}
+		\caption{}
+	\end{subfigure} 
+	~
+	\begin{subfigure}[]{0.49\textwidth}
+		\includegraphics[width=\textwidth]{Falcon3ConMax}
+		\caption{}
+	\end{subfigure}
+	%a blank line to force the subfigure onto a new line
+	
+	\begin{subfigure}[]{0.49\textwidth}
+		\includegraphics[width=\textwidth]{Falcon4ConMax}
+		\caption{}
+	\end{subfigure} 
+	
+	\caption{Maximum arc-wise concentration (a) Falcon 1 (b) Falcon 3 (c) Falcon 4}
+	\label{fig:FalconConMax}
+\end{figure}
+
+\subsubsection{SPMs}
+Statistical performance of \bera{OpenFOAM} results are compared with \bera{FLACS} which data extracted from \cite{Hansen2010a} in Table~\ref{tab:Falcon_SPMs}:
+
+\begin{table}[h!]
+	\caption{Statistical performance measure values of Falcon} \label{tab:Falcon_SPMs}
+	\centering
+	\begin{tabular}{lrrrrr}
+		\toprule
+		& MRB & MG & RMSE & VG  &FAC2 \\
+		\midrule
+		$FLACS$	&1.35 &5.56 &1.88 &23.65 &0	\\
+		\bottomrule
+	\end{tabular}
+\end{table}

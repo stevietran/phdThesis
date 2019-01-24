@@ -1,0 +1,286 @@
+%!TEX root = thesis.tex
+\graphicspath{{Figs/BurroFigs/}}
+% ACRONYM
+\nomtypeA{ABL}{Atmospheric Boundary Layer}
+\nomtypeA{LFL}{Lower Flammability Limit}
+\nomtypeA{LNG}{Liquefied Natural Gas}
+\nomtypeA{MEP}{Model Evaluation Protocol}
+\nomtypeA{SPM}{Statistical Performance Measures}
+\nomtypeA{MRB}{Mean Relative Bias}
+\nomtypeA{MBSE}{Mean Relative Square Error}
+\nomtypeA{FAC2}{Factor of 2}
+\nomtypeA{MG}{Geometric Mean Bias}
+\nomtypeA{VG}{Geometric Variance}
+\nomtypeA{NFPA}{National Fire Protection Agency}
+\nomtypeA{LLNL}{Lawrence Livermore National Laboratory}
+% Abl profiles
+\nomtypeR{$L_{MO}$}{Monin-Obukhov length}{\si{m}}
+\nomtypeG{$\tau_s$}{Surface shear stress}{\si{N/m^2}}
+\nomtypeR{$q_s$}{Surface heat flux}{\si{W/m^2}}  
+\nomtypeR{$T_s$}{Surface temperature}{\si{K}}
+\nomtypeR{$u_*$}{Friction velocity}{\si{m/s}} 
+\nomtypeR{$z_{0}$}{ABL roughness length}{\si{m}}
+\nomtypeG{$\theta$}{Potential temperature}{\si{K}}
+\nomtypeG{$\theta_{*}$}{Friction temperature}{\si{K}}
+\nomtypeG{$\phi_m$}{Monin-Obukhov universal momentum similarity function}{}
+\nomtypeG{$\phi_h$}{Monin-Obukhov universal temperature similarity function}{}
+\nomtypeD{$Pr$}{Prandlt number}{${\nu}/{\alpha}$}
+% Mixed layer similarity
+\nomtypeR{$w_{*}$}{Convective velocity}{\si{m/s}}
+\nomtypeR{$h_{ABL}$}{Height of ABL}{\si{m}}
+% Spm
+\nomtypeR{$C_m$}{Experimental measured concentration}{}
+\nomtypeR{$C_p$}{Predicted concentration from simulation}{}
+\chapter{Introduction}
+\section{Motivation}
+%%%%%%%%%%%%
+Mostly all human activities are affected by Atmospheric boundary layer (ABL). This is also where most air pollution phenomena are occurred. Understanding of the processes taking place in the ABL has attracted various research study.
+
+One of hazardous materials is Liquefied natural gas (LNG). LNG is an effective solution for long-distance natural gas transfer. LNG has become a prefer option for international trading of natural gas. Singapore’s first LNG terminal with throughput capacity of 6 million tons a year (MTPA) was opened on 2014. It shows the move of Singapore government to this new emerging LNG market. However, LNG storage, handling, transportation are exposed to serious risks for human, equipments and the environment, due to thermal hazards associated with combustion events such as pool fire, vapour cloud fire, explosion or rapid phase transition. Safety assessment and hazards mitigation method should be applied to lower the possibilities of catastrophic disaster relating to the LNG industry. 
+
+Computational Fluid Dynamics (CFD) is increasingly being used in simulation of ABL flows.  
+Open source CFD tool OpenFOAM is a more powerful research tool in comparison to proprietary software because of its flexibility to incorporate new implementation of fields calculation and also for post-processing. Using general CFD code like OpenFOAM in simulating ABL flows also encourage research sharing and reusing code in this specific field where in-house code is usually adopted.
+
+Applying OpenFOAM for ABL gas dispersion is the motivation of this thesis. Successfulness of this will promote the use of general CFD in solving industrial safety problem.
+
+%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Atmospheric boundary layer (ABL)}
+Atmospheric boundary layer (ABL) or planetary boundary layer (PBL) is the lowest part of atmosphere where the surface effects are dominant factors to characterise its properties. Most air pollution phenomena are occurred within ABL. ABL can be divided into three layers characterised by different scaling factors: roughness layer (from the ground to surface roughness length $z_0$), surface layer and mixed layer \cite{Zannetti2013}. ABL is usually divided into different types based on the main mechanism of turbulence generation and atmospheric stability \cite{Arya2001}. Atmospheric stability characterises the vertical acceleration of the air parcel. Pasquill-Gifford is the most common classification of atmospheric stability. According to this scheme, the atmospheric stability is classified into six classes, from A corresponding to the most unstable to D which is the neutral condition and to F which is the most stable conditions \cite{Mohan1998}, depending on temperature, sensitive heat flux, surface roughness, wind velocity, and wind direction.
+
+ABL is an important factor affecting the dispersion process by the effect of wind speed, surface roughness and atmospheric stability. Higher wind speed advects the cloud more rapidly, produces atmospheric turbulence to increase mixing of the cloud. Surface roughness determines the relation of advection and dilution process. Under stable atmospheric condition, mixing is suppressed due to the damping process of stratified density on vertical movement of air flow. Conversely, unstable atmospheric condition enhances the vertical mixing process. When the dispersion occurs at sloping terrain or in presence of obstructions, these also enhances gravity-driven flow and turbulent mixing. 
+\subsection{Monin–Obukhov similarity theory}
+The Monin–Obukhov similarity theory \cite{Foken2006} has been widely applied to the surface layer of ABL. It assumes horizontally homogeneous and quasi-stationary flow field. ABL profiles of flow fields are only varied in vertical direction and vertical fluxes are constant.
+
+Some most important scaling parameters in the surface layer are derived from the height $z$, surface shear stress $\tau_s$, surface heat flux $q_s$ and buoyancy variable $g/T_s$ ($T_s$ is the surface temperature). The resulting scaling parameters (Equation~(\ref{eq:mo-scaling})) are friction velocity $u_{*}$, friction temperature $\theta_{*}$ and the Monin-Obukhov length $L_{MO}$  which is the height where shear effect is still significant in turbulence production. $\kappa$ is the von Karman constant.
+\begin{equation}\label{eq:mo-scaling}
+\begin{aligned} 
+u_{*} &= \sqrt{\frac{\tau_s}{\rho}} \\
+\theta_{*} &= -\frac{q_s}{\rho c_p u_{*}} \\
+L_{MO} &= \frac{T_s u_{*}^2}{\kappa g \theta_*}
+\end{aligned} 
+\end{equation}
+From these definition, it is clear that depend on the heat flux from or to the ground or zero, Monin-Obukhov length $L_{MO}$ varied from $-\infty$ to $\infty$. Magnitudes of $L_{MO}$ characterised the height where mechanical and buoyant production of turbulence are in balance.
+
+According to Monin-Obukhov theory, velocity and potential temperature mean gradient can be expressed as:
+\begin{subequations}
+	\begin{align} 
+	\frac{\partial u}{\partial z} = \frac{u_{*}}{\kappa z}\phi_m(\zeta) \label{eq:MOVelocityEq}\\
+	\frac{\partial \theta}{\partial z} = \frac{\theta_{*}}{\kappa z}\phi_h(\zeta) \label{eq:MOPotenTempEq}
+	\end{align}
+\end{subequations}
+where $\zeta=z/L_{MO}$ is stability parameter. Values of $\zeta$ are always negative under unstable condition and positive under stable condition. $\phi_m(\zeta)$, $\phi_h(\zeta)$ are universal similarity functions of momentum and heat accordingly derived from empirical data.
+
+Similarity functions have many empirical forms derived from various flat and homogeneous site experiments. \textcite{BUSINGERJA1971} used Dyer-Businger equation to derive the relationship between universal function of heat and momentum. They proposed that:
+\begin{equation} \label{eq:mo-stab-func}
+\begin{aligned}
+\phi_m^2=\phi_h &=(1-16\zeta)^{-1/2} &(-5<\zeta<0)\\	 
+\phi_m=\phi_h &=1+5\zeta &(0 \le \zeta<1)
+\end{aligned}
+\end{equation}
+However, they also suggested an alteration of von Karman constant $\kappa = 0.35$ and under neutral atmospheric condition $Pr_t^{-1} = 1.35$. The criticism of unrealistic $\kappa$, \textcite{Hogstrom1996} provided a correction to the universal functions of \textcite{BUSINGERJA1971} with $\kappa=0.4$ and $Pr_t^{-1}=1.05$:
+\begin{equation} \label{eq:moUniFunc}
+\begin{aligned}
+\phi_m &=(1-19.3\zeta)^{-1/4} &(-2<\zeta<0)\\	 
+\phi_m &=1+6\zeta &(0 \le \zeta<1)\\
+\phi_h &=0.95(1-11.6\zeta)^{-1/2} &(-2<\zeta<0)\\	 
+\phi_m &=0.95+7.8\zeta &(0 \le \zeta<1)
+\end{aligned}
+\end{equation}
+
+The momentum diffusivity $\nu_t$ and heat diffusivity $\alpha_t$ are expressed in relation to the universal similarity functions as:
+\begin{equation} \label{eq:MO-turb-diffusivity}
+\begin{aligned}
+\nu_t &=\frac{\kappa z u_{*}}{\phi_m(\zeta)} \\	 
+\alpha_t &=\frac{\kappa z u_{*}}{\phi_h(\zeta)} 
+\end{aligned}
+\end{equation}
+
+\paragraph{Mean wind and temperature profiles}
+The velocity and temperature profiles can be specified from the integration of Equation~(\ref{eq:MOVelocityEq}). These profiles can be written as: 
+\begin{equation} \label{eq:MOVelocityProfile}
+u(z) = \frac{u_{*}}{\kappa }\left[ \ln \left(\frac{z}{z_0}\right) - \psi_m \left(\frac{z}{L_{MO}}\right) \right]
+\end{equation}
+\begin{equation} \label{eq:MOPotenTempProfile}
+\theta(z) = \theta_{w}\frac{\theta_{*}}{\kappa }\left[ \ln \left(\frac{z}{z_0}\right) - \psi_h \left(\frac{z}{L_{MO}}\right) \right]
+\end{equation}
+where $z_0$ is ABL surface roughness practically found from the wind profile. $z_0$ is ranged from \SI{10e-4}{\meter} for calm open oceans and up to \SI{3}{\meter} in case of urban site with tall buildings \cite{Luketa-Hanlin2007}. $\psi_m$, $\psi_h$ are integrated forms of the similarity functions Equation~(\ref{eq:mo-stab-func}) \cite{Pieterse2013}:
+\begin{equation}
+\begin{aligned}
+\psi_m=\phi_m^2 &=\ln \left[\left( \frac{1 +x^2}{2} \right) \left( \frac{1 +x}{2} \right)^2 \right] -2 \tan^{-1}x +\frac{\pi}{2} &(L_{MO}<0)\\
+\psi_h &= 2 \ln \left( \frac{1 +x^2}{2} \right) &(L_{MO}<0)\\		 
+\phi_m=\phi_h &=-5\frac{z}{L_{MO}} &(L_{MO}>0)
+\end{aligned}
+\end{equation}
+where $x=(1-16z/L_{MO})^{1/4}$
+
+\subsection{Mixed-layer similarity}
+In convective boundary layer, the height of ABL $h_{ABL}$ is used as the length scale. Scaling parameters derived from mixed-layer similarity are convective velocity $w_{*}$ and convective temperature scale $T_{*}$ (Equation~(\ref{eq:convective-scaling})):
+\begin{equation}\label{eq:convective-scaling}
+\begin{aligned} 
+w_{*} &= \left( \frac{g}{T_s} q_s h_{ABL} \right)^{1/3} \\
+T_{*} &= \frac{q_s}{w_{*}}
+\end{aligned} 
+\end{equation}
+
+Turbulence root-mean-square in horizontal directions $\sigma_u$, $\sigma_v$ are independent to heights as Equation~(\ref{eq:turl-rms-convective-layer}). The vertical component $\sigma_w$ increases with height, reaches maximum in the middle then sharply decreases in the upper part of mixed layer. However, a constant value $\sigma_w=0.6$ can be used as simplified parametrization in convective layer.
+\begin{equation}\label{eq:turl-rms-convective-layer}
+\frac{\sigma_u}{w_{*}} \approx \frac{\sigma_v}{w_{*}} \approx 0.6;
+\end{equation}
+
+The height of ABL $h_{ABL}$ depends on the ABL stability. Under unstable condition, $h_{ABL}$ is typically in the order of \SIrange{1000}{1500}{\meter}. For neutral boundary and stable condition, $h_{ABL}$ (Equation~(\ref{eq:abl-height})) can be estimated as \cite{Luketa-Hanlin2007}: 
+\begin{equation} \label{eq:abl-height}
+\begin{aligned}
+h_{ABL,neutral} &= 0.3 \frac{u_{*}}{f_c}\\	 
+h_{ABL,stable} &= 0.4 \sqrt{\frac{u_{*}L_{MO}}{f_c}} 
+\end{aligned}
+\end{equation}
+where $u_{*}$ is friction velocity, $L_{MO}$ is Monin-Obukhov length, Coriolis parameter $f_c$ defined from the Earth rotational speed $ \omega_E=\SI{7.292e-5}{\per\second}$ and the latitude $\Phi_E$ as:
+\begin{equation} 
+f_c = 2 \omega_E \sin \Phi_E
+\end{equation}
+
+\section{Dense Gas Dispersion} 
+Dense gas has relative density larger than 1.15 with respect to air at ambient temperature. Dense gas may results from heavier-than-air gas release such as \ce{CO2}, Chlorine or release at cryogenic temperature such as Liquefied Natural Gas (LNG). \textcite{Koopman2007} discussed two specified denser-than-air cloud behaviours: stable density stratification which results a reduction of vertical turbulent mixing and horizontal gravity-driven flow due to the density gradient. These two effects result a lower and wider cloud observed from LNG vapour experiments.
+
+Releasing at cryogenic temperature, LNG vapour dispersion is one of the most complicated problem in dense gas dispersion. Some key physics involved in the dispersion process of LNG vapour are wind speed, surface roughness, atmospheric stability, terrain effect, and transition to passive dispersion \cite{Ivings2013}. Releasing at boiling point, LNG vapour cloud has density higher than ambient, therefore exhibits dense gas dispersion behaviours.   Reduced turbulent mixing between the dense gas and the surrounding makes ambient air has less significant role in dilution process \cite{Britter1989}. This effect may result the lingering of dense gas cloud, where the cloud travels downwind at a slower rate than the ambient. Experiment observation from \bera{Burro8} test (Figure~\ref{fig:MeanWindSpeedT2Burro8}) shows the reduction of wind velocity in the vapour cloud. The highest reduction of wind velocity is at \SI{1}{\meter}, while it has insignificant change at \SI{8}{\meter} height. This implies that turbulence within cloud is dramatically reduced, and the dispersion process was dominated by the gravity flow. At large spill rate, low wind speed, and stable atmospheric condition, the decoupling between denser-than-air cloud and surrounding will make it more difficult for ambient turbulent air to penetrate the cloud and result a bifurcation structure, where the cloud split into two plume at the centre line (as observed in Figure~\ref{fig:Concentration1m200sBurro8}). These are also the worst conditions for dispersion of LNG vapour which result the furthest downwind distance to Lower Flammability Limit (LFL). 
+
+Heat transfer from the surrounding and ground surface to the cold LNG vapour cloud is another important factors affecting the LNG vapour dispersion. Other relating heat transfer phenomenon is heat addition or heat removal due to the condensation or evaporation of water vapour and long wave heat radiation. However, the most dominate heat budget to the cold LNG vapour cloud is from the surrounding air and ground surface. The major effect of heat transfer to the LNG dispersion is changing its properties (due to temperature change) and increasing turbulent mixing process which then decreasing the distance to LFL of the vapour cloud. Heat introduced to the cloud will increase its temperature, reduce cloud density, therefore, shifting the cloud behaviour from dense gas to buoyant gas. Figure~\ref{fig:ConcentrationX400T400sBurro8} shows the horizontal concentration of the cloud. It can be seen that the contour of \SI{5}{\percent} is elevated, suggesting the evidence of buoyancy which cannot be shown in other tests. Then, it can be concluded that a small part of the cloud can become lighter-than-air if wind speeds are low enough and LNG vapour clouds linger sufficiently long. Therefore, the LNG dispersion model must also take into account the passive dispersion phase. Variable material properties, heat transfer from air to the cloud model and a ground-level heat transfer model are also needed for a sound prediction of LNG dispersion.  
+\begin{figure}[htbp]
+\centering
+\begin{subfigure}[]{0.45\textwidth}
+	\includegraphics[width=\textwidth]{MeanWindSpeedT2Burro8.jpg}
+	\caption{} \label{fig:MeanWindSpeedT2Burro8}
+\end{subfigure}
+%a blank line to force the subfigure onto a new line
+
+\begin{subfigure}[]{0.4\textwidth}
+	\includegraphics[width=\textwidth]{Concentration1m200sBurro8.jpg}
+	\caption{} \label{fig:Concentration1m200sBurro8}
+\end{subfigure} 
+~
+\begin{subfigure}[]{0.45\textwidth}
+	\includegraphics[width=\textwidth]{ConcentVerticalX400T400Burro8.png}
+	\caption{} \label{fig:ConcentrationX400T400sBurro8}
+\end{subfigure}
+\caption{(a) Mean wind speed during \bera{Burro8} at station T2 (57, 0, 1). (b) Horizontal concentration contour at \SI{1}{\meter} above ground level of \bera{Burro8} at \SI{200}{\second}. (c) Vertical concentration contours at \SI{400}{\meter} downwind at the time of \SI{400}{\second} of \bera{Burro8} test}
+\label{fig:dense-gas-phenomenon}
+\end{figure}
+
+\section{Model evaluation} 
+In context of evaluating the LNG dispersion model, a tool developed for National Fire Protection Agency (NFPA), so called the Model Evaluation Protocol (MEP) is used. It provides criteria and structure to fully evaluate a  dispersion model. It is a three-stages procedure including: scientific assessment, model verification and model validation \cite{Ivings2013}. Validation is a process that comparing model outputs to measurements over applicable range of the model. This procedure involves a number of aspects including key physics and variables involving the LNG vapour dispersion, selection of scenarios covering the key physical process, identification of validation data sets and physical comparison parameters and selection of statistical performance measures (SPM) and quantitative assessment criteria defining the acceptable range of SPM  \cite{Ivings2013}. The latter two aspects will be discussed in this section.
+
+\subsection{Validation data sets} \label{sec:validationData}
+In context of LNG vapour dispersion, Health and Safety Laboratory (HSL) created a set of full scale experimental data and wind tunnel test for model validation. The data set has 26 test configurations comprising field tests and wind tunnel tests as summarised in Table~\ref{tab:ValidationData}. Most configuration from field tests were under neutral or unstable atmospheric, excluding two high quality data sets from Thorney Island tests which were under a stable atmospheric condition. All field tests were in unobstructed terrain excepts the Falcon series tests which involve a large fence surrounding the LNG source. Most configurations from wind tunnel tests involved obstacles and terrains, therefore, mainly used to investigate the effect of obstruction. The data is available in the REDIPHEM database \cite{Nielsen1996} including physical comparison parameters of each test. These are 'maximum arc-wise concentration' which is the maximum concentration across an arc at the specified distance from the source; 'point-wise concentration' data which is the concentration at specific sensor locations; 'point-wise temperature' data for field tests which is not available for wind-tunnel tests as these were conducted under isothermal condition.
+
+LNG spill tests were conducted in field scale and also wind-tunnel scale. These data are sources to support model development, i.e. being used as the benchmark data to validate dispersion models. 
+
+\paragraph{Field scale experiments} 
+In U.S., field scale experiments of LNG spills were conducted by Lawrence Livermore National Laboratory (LLNL) from 1977 to 1988. These included Avocet series (1978) conducted in the old spill test facility in China Lake, then upgrading for Burro series (1980), followed by Coyote series in 1981 \cite{Ermak1989a}. A larger spill test facility was constructed for Falcon series in 1987 which was aimed at evaluating the effectiveness of a containment fence and water curtain \cite{Brown1990a}. During that time, series of similar field tests were carried out independently in U.K. A series of LNG and LPG trials at Maplin Sands were conducted by Shell Research in 1980. HSE examined the dispersion of fixed-volume heavy gas releases in 1984 at Thorney Island. Advantica, acquired by the Germanischer Lloyd (GL) Group in 2007, also carried out experiments on the hazard relating to LNG operations which data was reviewed in \cite{Cleaver2007}. In 2000s, Some experimental tests are carried out but limited data are publicly available such as MUST series \cite{Biltoft2001}, MID05 \cite{Allwine2007}, MKOPSC \cite{Cormier2009}. More recently, \textcite{Hanna2012} conducted Jack Rabbit field experiments which are releases of one or two tons of pressurized liquefied chlorine and ammonia into a depression; \textcite{Schleder2015} carried out propane cloud dispersion field tests with and without fence obstructing.
+
+The Burro series test was conducted by LLNL in 1980 aiming at examining the dispersion of LNG vapour under a variety of meteorological conditions. The test consisted of 8 continuous, finite duration releases of LNG onto an approximate \SI{58}{\meter} diameter water pond. The Burro test site can be shown in Figure~\ref{fig:BurroTestSite}. \bera{Burro3} was conducted under the most unstable atmospheric conditions. Under unstable atmospheric conditions and low spill rate, the test had the least maximum distance to the LFL. \bera{Burro7} had the largest spill volume, \SI{39.3}{\cubic\meter}, with the longest spill duration of \SI{174}{\second}. As seen in Figure~\ref{fig:DistToLFLBurroX1m}, the test had the typical steady state characteristics of LNG dispersion defining as the state when vaporization rate equals the spill rate and the cloud reaches its furthest distance to LFL downwind \cite{Koopman2007}. The test reached its steady state for about \SI{150}{\second} at \SI{140}{\meter} down wind, and concentrations varying from \SIrange{3}{7}{\percent}. The largest distance to LFL was observed in the \bera{Burro8} test which was in the most stable atmospheric condition and lowest wind speed. Table~\ref{tab:Burro-meteo-params} listed meteorological parameters of experiments in Burro series tests.
+\begin{figure}[htbp]
+	\centering
+	\includegraphics[width=0.8\textwidth]{BurroTestSite.png}
+	\caption{Burro Test Site \cite{Koopman1982}} \label{fig:BurroTestSite}
+\end{figure}
+
+\begin{table}[htbp]
+	\caption{Burro tests summary extracted from \cite{Koopman1982}} \label{tab:Burro-meteo-params}
+	\centering
+	\begin{tabular}{p{0.4\textwidth}p{0.1\textwidth}p{0.1\textwidth}p{0.1\textwidth}p{0.1\textwidth}}  
+		\toprule
+		& \bera{Burro3}	& \bera{Burro7}	& \bera{Burro8}	& \bera{Burro9}	\\
+		\midrule
+		Spill volume (\si{\cubic\meter}) 		
+		& 34 	& 39.4 	& 28.4 	& 24.2 	\\
+		Spill time (\si{\second}) 			
+		& 166 	& 174	& 107 	& 78 	\\
+		Average wind velocity (\si{\meter\per\second}) 
+		& 5.4	&8.4	& 1.8	& 5.7	\\
+		Wind direction (\si{o}) 	
+		& 224	& 208	&235	&232	\\
+		Relative humidity (\si{\percent})	
+		&5.2	&7.1	&4.6	&13.1	\\
+		Temperature at \SI{2}{\meter} (\si{\celsius})	
+		&33.8	&33.7	&33.1	&35.4	\\
+		Sensible heat flux (\si{\watt\per\square\meter})	
+		&-154	&-41	&2.2	&-10	\\
+		Atmospheric stability		
+		&B	&D	&E	&D	\\
+		Friction velocity (\si{\meter\per\second}) 	
+		&0.249	&0.372	&0.074	&0.252	\\
+		Monin-Obukhov length (\si{\meter})	
+		& -9.06	& -114	& +16.5	&-140	\\
+		Surface roughness length (\si{\meter}) 
+		& \num{2e-4} &\num{2e-4} 	&2\num{2e-4} 	&2\num{2e-4}\\
+		\bottomrule
+	\end{tabular}
+\end{table}
+
+\begin{figure}[htbp]
+	\centering
+	\includegraphics[width=0.7\textwidth]{DistToLFLBurroX1m.png}
+	\caption{Distance to LFL at 1 m height of Burro tests \cite{Koopman1982}} \label{fig:DistToLFLBurroX1m}
+\end{figure}
+
+The Falcon series were conducted by LLNL in 1987. These comprises 5 large-scale LNG spill tests aiming at evaluating the effectiveness of impoundments walls as a mitigation technique for accidental releases of LNG. LNG was spilled onto a rectangular water pond (60m x 40m). The evaporation rate could be roughly equivalent to the spill flow rate as the designed recirculation system was involved to maximize the evaporation process \cite{Gavelli2008}. LNG was supplied to the pond through 4 pipes, fitted with 0.11m diameter orifices and spaced at 90 degree intervals. The vapour fence, about 8.7m high, surrounded the water pond of a total area of 44m x 88m. The billboard of 13.3m tall, 17.1m wide was used to simulate the effect of a storage tank or other obstruction. The terrain was flat and the atmospheric condition was stable or neutrally stable. 
+
+\paragraph{Wind-tunnel test}
+Wind-tunnel scale tests in The Meteorological Institute at the University of Hamburg (UH), TNO Division for Technology for Society (TNO), Warren Spring Laboratory (WSL) were recorded in REDIPHEM database. 
+
+\begin{table}[htbp]
+	\caption{Validation data set \cite{Ivings2013}} \label{tab:ValidationData}
+	\centering
+	\begin{tabular}{p{2.5cm}p{1.5cm}p{6.5cm}p{3.5cm}}  
+		\toprule
+		Experiments	&Type	&Trials/cases	&Description	\\
+		\midrule
+		Maplin Sand (1980)	&Field	&27, 34, 35	&LNG/LPG \newline dispersion over sea	\\
+		Burro (1980)	&Field	&3, 7, 8, 9	&LNG	\\
+		Coyote (1980)	&Field	&3, 5, 6	&LNG	\\
+		Thorney Island (1982 - 1984) &Field &45, 47 &Freon 12/\ce{N2} mixture \newline Continuous release \\
+		CHRC (2006) &Wind tunnel &A (without obstacles)\newline B (with storage tank and dike)\newline	C (with dike)	&\ce{CO2} \\
+		BA-Hamburg 	&Wind tunnel &DA0120/DAT223 (Unobstructed) \newline 039051/039072 (Upwind fence) \newline DA0501/DA0532 (Downwind fence) \newline 039094/095/097  (Circular fence)\newline DAT647/631/632/637 (Slope) & \ce{SF6} \\
+		BA-TNO &Wind tunnel &TUV01 (unobstructed), \newline TUV02 (downwind fence),  \newline FLS (3-D mapping)	&\ce{SF6} \\
+		\bottomrule
+	\end{tabular}
+\end{table}
+
+% SPM
+\subsection{Statistical Performance Measure (SPM)}
+SPMs are means to compare prediction parameters and the measured one. SPM chosen should reflect the bias of these predictions. There are five SPMs using for MEP including mean relative bias (MRB), mean relative square error (MBSE), the fraction of predictions within the factor of two of measurements (FAC2), geometric mean bias (MG) and geometric variance (VG). Definition and acceptability criteria for each SPM are presented in tabular form as Table~\ref{tab:SPM}; $C_m$, $C_p$ are the measured and simulated concentration accordingly, $\overline{A}$ denote the mean operation of variable $A$.
+
+\begin{table}[h!]
+	\caption{Statistical Performance Measures \cite{Ivings2013}} \label{tab:SPM}
+	\centering
+	\begin{tabular}{lcc}  
+		\toprule
+		&Definition		&Acceptable criteria		\\
+		\midrule
+		$MBR$ 		
+		&$\displaystyle \overline{\left( \frac{C_m - C_p}{0.5(C_m - C_p)} \right)}$ 	
+		&$-0.4<MBR<0.4$	\\
+		$MRSE$ 		
+		&$\displaystyle \overline{\left( \frac{(C_m - C_p)^2}{0.25(C_m + C_p)^2} \right)}$ 	
+		&$MRSE<2.3$	\\
+		$FAC2$ 		
+		&$\displaystyle \frac{C_m}{C_p}$ 	
+		&$0.5<FAC2<2$	\\
+		$MG$ 		
+		&$\displaystyle \exp \left( \overline{\ln{\frac{C_m}{C_p}}} \right)$ 	
+		&$0.67<MG<1.5$	\\ 
+		$VG$ 		
+		&$\displaystyle \exp \left( \overline{\left( \ln \frac{C_m}{C_p} \right)^2} \right)$ 	
+		&$VG<3.3$	\\		
+		\bottomrule
+	\end{tabular}
+\end{table}
+
+%%%%%%%%%%%%%%%%%%%%%%
+\section{Research objectives and scopes}
+%%%%%%%%%%%%%%%%%%%%%%
+The thesis is on developing a tool using framework of OpenFOAM to simulate gas dispersion in ABL. The developed model takes into account different atmospheric stability to solve ABL turbulence. RANS turbulence models are used. The dispersion model takes into account the effect of gas buoyancy and heat transfer mechanism from the air surrounding to the gas cloud. 
+
+Dispersion of cold dense gas behaviour like LNG vapour with transition from dense gas to buoyant gas behaviour due to heat addition from the air surrounding to the vapour cloud, is examined to find the effectiveness of proposed model to replicate behaviours of such flow.
+
+The thesis comprises of five parts. After literature review, the methodology developed using OpenFOAM tool to solve ABL turbulence and ABL dispersion of gas is presented. The proposed model is used to simulate turbulence of different thermal stratified ABL in the third chapter. The fourth chapter devotes to apply OpenFOAM in simulation of dense gas in ABL. Final part includes conclusions and future works that may be induced from the thesis.

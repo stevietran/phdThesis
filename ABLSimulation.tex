@@ -1,0 +1,236 @@
+%!TEX root = ./thesis.tex
+\graphicspath{{Figs/fullScaleStrat/}{Figs/ablNeutral/}{Figs/A1-1/}{Figs/fullScale/}{Figs/CedvalA11/}}
+
+\chapter{Modelling of Atmospheric Boundary Layer}
+Successful solving ABL turbulence is a first step to calculate gas dispersion. In this Chapter, different turbulence models are modified to solve horizontal homogeneous ABL surface layer. Three cases are investigated including neutral ABL, neutral ABL in presence of obstacles and thermally stratified ABL.
+
+\section{Full scale simulation of the neutral ABL} \label{sec:neutralABL}
+\subsection{Domain and mesh}
+The domain of \SI{5000x500}{\meter} with the resolution of \SI{500x50}{} cells is used for the simulation of neutral ABL over flat terrain. The mesh is uniform in stream-wise direction and stretched in vertical direction with the expansion ratio of $1.075$.
+
+\subsection{Boundary conditions}
+The boundary conditions of the cases are represent in Table~\ref{tab:2dFullBcs}. 
+\begin{table}[h!]
+	\caption{Boundary conditions for neutral ABL simulation} \label{tab:2dFullBcs}
+	\centering
+	\begin{tabular}{llr}
+		\toprule
+		ABL inlet	&profiles of $k$, $u$, $\epsilon$, $\omega$	& Eq.~(\ref{eq:Richards1993_inlet}), ~(\ref{eq:hhtslOmeProfile})\\
+		ABL outlet 	&\bera{zeroGradient} for all variables &\\
+		&\bera{fixedValue} for static pressure &\\
+		ABL side	&\bera{zeroGradient} for all variables &\\
+		ABL top		&\bera{zeroGradient} for all variables &\\
+		&\bera{fixedFlux}/\bera{zeroGradient} for $u$ and $\epsilon$& Eq.~(\ref{eq:RichardsTopBCs})\\
+		ABL bottom 	& \bera{noSlip} for $u$&\\
+		\bottomrule
+	\end{tabular}
+\end{table}
+
+ABL parameters used to define inlet variable profiles are listed in Table \ref{tab:2D_full_neutral_params} according to the reference case of \textcite{Hargreaves2007}:
+\begin{table}[h!]
+	\caption{ABL parameters using for neutral ABL simulation} \label{tab:2D_full_neutral_params}
+	\centering
+	\begin{tabular}{rrrr}
+		\toprule
+		$u_*$ (m/s)	&$z_0$ (m) & $u_{ref}$ (m/s)	&$z_{ref}$ (m)  \\
+		0.625	& 0.01 & 10 	& 6 \\
+		\bottomrule
+	\end{tabular}
+\end{table}
+
+\subsection{Numerical setting}
+Steady state simulation is employed using \bera{buoyantNonReactingSimpleFoam} described in previous chapter. OpenFOAM discretisation schemes, velocity-pressure coupling algorithm as well as linear solvers are listed below:
+\begin{itemize}
+	\item Time schemes: \bera{steadyState}
+	\item Gradient schemes: \bera{Gauss linear}
+	\item Divergence schemes: \bera{Gauss limitedLinear 1}
+	\item Surface normal gradient schemes \bera{corrected} 
+	\item Laplacian schemes: \bera{Gauss linear corrected} 
+	\item Interpolation schemes: \bera{linear}
+	\item Solving algorithm: \bera{SIMPLE}
+	\item Linear solver for p: \bera{GAMG} with \bera{DICGaussSeidel} preconditioner
+	\item Linear solver for U, h, k, epsilon: \bera{PBiCGStab} with \bera{DILU} preconditioner
+\end{itemize}
+Residual control is set at three order of magnitude for pressure and four order of magnitude for other variables such as $U$, $k$, $\epsilon$ and $h$.
+Modification of $k-\epsilon$ and $k-\omega$ models (Equation~(\ref{eq:Richards1993_model_constrain})) are used to simulate neutral ABL and comparing with standard models. These three cases are summarised in Table~\ref{tab:2dFullBcsTurb} 
+\begin{table}[h!]
+	\caption{Turbulence models setting for neutral ABL simulation} \label{tab:2dFullBcsTurb}
+	\centering
+	\begin{tabular}{llr}
+		\toprule
+		Turbulence model 	&\bera{standard $k-\epsilon$} & \\
+		&\bera{modified $k-\epsilon$} &Eq.~(\ref{eq:Richards1993_model_constrain})\\
+		&\bera{modified $k-\omega$ SST} & \\
+		Wall functions
+		& \bera{nutkWallFunction} for $\nu_t$ &\\
+		& \bera{epsilonWallFunction} for $\epsilon$ &\\
+		& \bera{kqRWallFunction} for $k$ &\\
+		\bottomrule
+	\end{tabular}
+\end{table}
+
+Different level of inlet kinetic energy by altering $C_\mu$ according to Equation~(\ref{eq:Richards1993_inlet}). The inclusion of source term by \textcite{Pontiggia2009} is implemented using Equation~(\ref{eq:epsSourcePont}). Two values of default value $C_\mu = 0.09$ and $C_\mu = 0.017$ are simulated and compared with Monin-Obukhov theory.
+
+\subsection{Results and discussion of neutral ABL simulations}
+Modification of $k-\epsilon$ models achieve matched results as shown in Figure~\ref{fig:neutralFullScaleProfiles}. Modified model constants as in Equation~(\ref{eq:Richards1993_model_constrain}) is sufficient to compensate terms deflection from calculation of von-Karman constants $\kappa_{k-\epsilon} = 4.3$ from model constants and universal used $\kappa = 4.1$ used in Monin-Obukhov theory.  
+\begin{figure}[htbp]
+	\centering
+	\includegraphics[width=0.8\textwidth]{fullScaleProfiles.pdf}
+	\caption{Velocity, turbulent kinetic energy and turbulent dissipation rate profiles from simulation of neutral ABL using standard $k-\epsilon$ and modified $k-\epsilon$ turbulence model}
+	\label{fig:neutralFullScaleProfiles}
+\end{figure}
+
+On the other hand, modification of k-$\omega$ has insignificant effect comparing with original model as shown in Figure~\ref{fig:neutralFullScaleProfilesOme}. This is due to the fact that the calculation of von-Karman constants $\kappa$ from model constants are close to value used to derive the Monin-Obukhov profiles, which is $4.08$. 
+\begin{figure}[htbp] 
+	\centering
+	\includegraphics[width=0.8\textwidth]{fullScaleOmeProfiles.pdf}
+	\caption{Velocity, turbulent kinetic energy and turbulent dissipation rate profiles from simulation of neutral ABL using standard $k-\omega$ and SST $k-\omega$ turbulence model}
+	\label{fig:neutralFullScaleProfilesOme}
+\end{figure}
+
+Results from modelling different turbulence kinetic energy by varying $C_\mu$ are presented in Figure~\ref{fig:neutralFullScaleProfilesCmu}. The profiles of velocity and dissipation rated are perfectly matched with Monin-Obukhov profiles. In $C_\mu=0.017$ simulation, the value of $k$ near ground was smaller than theory value, however the kinetic energy level is matched with theory value at higher height. The smaller value of k at wall adjacent cell was due to wall function, where wall treatment used for default $C_\mu=0.09$ is implemented. However, overall results are accepted for verifying the proposed model in simulating different level of kinetic energy.
+\begin{figure}[htbp] 
+	\centering
+	\includegraphics[width=0.8\textwidth]{fullScaleCmuProfiles.pdf}
+	\caption{Velocity, turbulent kinetic energy and turbulent dissipation rate profiles from simulations of different kinetic energy levels by varying $C_\mu = 0.09$ and $C_\mu=0.017$}
+	\label{fig:neutralFullScaleProfilesCmu}
+\end{figure}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Simulations of neutral ABL in presence of obstacles}
+\subsection{CEDVAL wind tunnel data}
+CEDVAL (Compilation of Experimental Data for Validation of Microscale Dispersion Models) wind tunnel data was carried out in the wind tunnel at the Meteorological Institute of the University of Hamburg. In \bera{A1-1} test, flow around a rectangular modelled building was tested in simulated atmospheric boundary layer modelled at a scale of 1:200. CEDVAL \bera{A1-1} test obstacle geometry is presented in Figure~\ref{fig:A1-1_geom}. The flow was measured in two measurement planes (horizontal plane at a height of $z=0.28H$ and vertical plane at $y=0H$). Profiles of mean velocity and turbulence were obtained from two-component laser Doppler velocimetry. They are reported in terms of three mean velocity components longitudinal ($\bar{U}$), lateral ($\bar{V}$) and vertical ($\bar{W}$), corresponding to three turbulent intensity $I_u$, $I_v$ and $I_w$, two Reynold stress $\overline{u'v'}$, $\overline{u'w'}$ \cite{Gorle2010}. Turbulent kinetic energy can be derived from above data as:
+\begin{equation}
+k=\frac{1}{2}\left( I_u \bar{U} + I_v \bar{V} + I_w \bar{W} \right)
+\end{equation}  
+
+\begin{figure}[htbp]
+	\centering
+	\includegraphics[width=0.6\textwidth]{A1-1-SS-1.PNG}
+	\caption{Obstacle geometry of CEDVAL A1-1}
+	\label{fig:A1-1_geom}
+\end{figure} 
+Test results comprise of two parts: detailed flow measurements of the boundary layer flow before the model building was mounted in the test section and flow measurements when obstacle was included.
+
+\subsection{Domain and mesh generation}
+The domain size to the gas concentration is observed to choose the sufficient domain for further study. The flow can be closely assumed symmetric, only half of the flow will be simulated. The domain of \SI{4x1}{\meter} is used for the simulation of neutral ABL over flat terrain.  The computational domain surfaces are named as: \bera{ground}, \bera{top}, \bera{frontField}, \bera{backField}, \bera{sideField}. The mesh is shown in Figure~\ref{fig:cedvalA11Mesh}:
+\begin{figure}[h!]
+	\centering
+	\includegraphics[width=0.8\textwidth]{theMesh.png}
+	\caption{The mesh using for CEDVAL \bera{A1-1} simulation} 
+	\label{fig:cedvalA11Mesh}
+\end{figure}
+
+The adequate number of nodal points using for the study can be determined with the mesh independence study. Three different meshes which the number of nodes vary with the factor of two are compared. Structured mesh with hexahedral cells is made from OpenFOAM native mesh generation \bera{blockMesh}. The mesh is uniform in the stream and cross-stream direction, while stretched in vertical direction. The maximum aspect ratio of the mesh is in the cell adjacent to the wall direction. By alternating this value, the wall length scale $y^+$ can be fit to the desired value. 
+
+\subsection{Boundary conditions}
+ABL parameters are extracted from experimental data, which is summarised in Table~\ref{tab:CEDVAL_A1-1_params}. Profiles of inlet variables are using the same Equation as previous section. 
+\begin{table}[h!]
+	\caption{CEDVAL \bera{A1-1} ABL parameters} \label{tab:CEDVAL_A1-1_params}
+	\centering
+	\begin{tabular}{rrrr}
+		\toprule
+		$u_*$ (m/s)	&$z_0$ (m) & $u_{ref}$ (m/s)	&$z_{ref}$ (m)  \\
+		0.374	& 0.0007 & 6 	& 0.5 \\
+		\bottomrule
+	\end{tabular}
+\end{table}
+
+\subsection{Numerical setting}
+A same numerical setting as previous section are also used for this simulation. Modified $k-\epsilon$ and SST $k-\omega$ turbulence models which are effectively reproduced horizontally homogeneous ABL surface layer in flat terrain, are used to predict flow in the presence of obstacles.
+
+\subsection{Results and discussion of neutral ABL in presence of obstacle simulations}
+\subsubsection{Approaching flow}
+Data from approaching flow are compared with the simulation results. Profiles of U, $k$ and $\epsilon$ are sample from the mid plane between the simulation inlet and the obstacle. Results are shown in Figure~\ref{fig:CedvalA11Profiles}. Turbulence kinetic  energy are shown to slightly decreased with height from experiments, however constant turbulence are assumed in the inlet profile. Velocity profiles are matched with observations. Turbulence dissipation is not evaluated in the experiments.
+\begin{figure}[h!] 
+	\centering
+	\includegraphics[width=0.8\textwidth]{CedvalA11Profiles.pdf}
+	\caption{Profiles of $U$, $k$ and $\epsilon$ of CEDVAL \bera{A1-1} test}
+	\label{fig:CedvalA11Profiles}
+\end{figure}
+
+\subsubsection{Influencing of obstacle}
+The same performance of $k-\epsilon$ and $k-\omega$ models in predicting flow around an obstacle. Both are shown to over-predicted reattachment length in Figure~\ref{fig:cedvalA11velContour}. This is contributed from the fact that models constants are modified to fit the horizontal homogeneous ABL requirements and the deficiency of the models in resolving turbulence of flow in the wake of the obstacle.
+   
+\begin{figure}[h!]
+	\centering
+	\includegraphics[width=0.8\textwidth]{cedvalEpsGlyphU.png}
+	\includegraphics[width=0.8\textwidth]{A1-1-FV-1.PNG}
+	\includegraphics[width=0.8\textwidth]{cedvalOmeGlyphU.png}
+	\caption{Contour plot of velocity on planes $y=0$, from top to bottom: $k-\epsilon$ model, Experiment data, $k-\omega$ model} 
+	\label{fig:cedvalA11velContour}
+\end{figure}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Full scale simulation of the stable stratified ABL}
+The domain of \SI{500x30x30}{\meter} with the resolution of \SI{500x30x43}{} cells is used for the simulation of stable ABL over flat terrain. The mesh is uniform in stream-wise direction and stretched in vertical direction with the expansion ratio of $1.075$. ABL parameters used in the simulation are tabulated in Table~\ref{tab:2D_full_stable_params}.
+\begin{table}[h!]
+	\caption{Meteorology parameters used for stable ABL simulation} \label{tab:2D_full_stable_params}
+	\centering
+	\begin{tabular}{lrrrrr}
+		\toprule
+		$u_*$	& $z_0$ &$\theta_*$ &$q_s$ &$L_{MO}$  \\
+		0.074	&2E-4 	&0.145 &2.2		&16.5 \\
+		\bottomrule
+	\end{tabular}
+\end{table}
+
+\subsection{Boundary conditions}
+The boundary conditions of the cases are represent in Table~\ref{tab:stableFullBcs}. 
+\begin{table}[h!]
+	\caption{Boundary conditions for stable stratified ABL simulation} \label{tab:stableFullBcs}
+	\centering
+	\begin{tabular}{llr}
+		\toprule
+		ABL inlet	&profiles of $k$, $u$, $\epsilon$, $\omega$	& Eq.~(\ref{eq:Richards1993_inlet}), ~\ref{eq:hhtslOmeProfile}\\
+		ABL outlet 	&\bera{zeroGradient} for all variables &\\
+		&\bera{fixedValue} for static pressure &\\
+		ABL side	&\bera{zeroGradient} for all variables &\\
+		ABL top		&\bera{zeroGradient} for all variables &\\
+		&\bera{fixedFlux}/\bera{zeroGradient} for $u$ and $\epsilon$& Eq.~(\ref{eq:RichardsTopBCs})\\
+		Turbulence model 	&\bera{buoyant $k-\epsilon$}& \\
+		&\bera{buoyant $k-\epsilon$} with $S_\epsilon$ & Eq.~(\ref{eq:stablePontiggiaEpsSource})\\
+		Wall functions 	& \bera{noSlip} for $u$&\\
+		& \bera{nutkAtmRoughWallFunction} for $\nu_t$ &\\
+		& \bera{epsilonWallFunction} for $\epsilon$ &\\
+		& \bera{kqRWallFunction} for $k$ &\\
+		\bottomrule
+	\end{tabular}
+\end{table}
+
+\subsection{Numerical setting}
+Discretisation and linear solver settings are listed below: 
+\begin{itemize}
+	\item Time schemes: \bera{steadyState}
+	\item Gradient schemes: \bera{Gauss linear}
+	\item Divergence schemes: \bera{Gauss limitedLinear 1}
+	\item Surface normal gradient schemes \bera{corrected} 
+	\item Laplacian schemes: \bera{Gauss linear corrected} 
+	\item Interpolation schemes: \bera{linear}
+	\item Solving algorithm: \bera{SIMPLE}
+	\item Linear solver for p: \bera{GAMG} with \bera{DICGaussSeidel} preconditioner
+	\item Linear solver for U, h, k, epsilon: \bera{PBiCGStab} with \bera{DILU} preconditioner
+\end{itemize}
+
+Two cases (as shown in Table~\ref{tab:stableFullcases}) are simulated to find appropriate setting for stable ABL. Horizontally homogeneous profiles of velocity and turbulent variables are the target which already achieved for neutral ABL. Results are compared with profiles calculated from Monin-Obukhov theory.
+\begin{table}[h!]
+	\caption{Stable ABL simulations cases} \label{tab:stableFullcases}
+	\centering
+	\begin{tabular}{lrrr}
+		\toprule
+		&Case 1 &Case 2 &Monin-Obukhov theory\\
+		\midrule
+		label &FOAM\_ORIG &FOAM\_MOD &MO\\
+		$S_\epsilon$ &0	&Eq.~(\ref{eq:stablePontiggiaEpsSource}) & \\
+		\bottomrule
+	\end{tabular}
+\end{table} 
+
+\subsection{Results and discussion of stable stratified ABL simulation}
+Results of stable ABL simulations can be shown in Figure~\ref{fig:stableFullcasesProfile}. Profiles of velocity, turbulent kinetic energy $k$ and dissipation rate $\epsilon$ at the outlet boundary are compared with those derived from Monin-Obukhov theory. Standard $k-\epsilon$ with no modification is shown inadequate to resolve turbulence in this case. Modification of $k-\epsilon$ models as Equation~(\ref{eq:stablePontiggiaEpsSource}) achieved matched results against Monin-Obukhov theory. This verified the appropriate of proposed model in simulation ABL turbulence in stable stratified atmospheric stability.
+\begin{figure}[h!] 
+	\centering
+	\includegraphics[width=0.8\textwidth]{fullScaleStratProfiles.pdf}
+	\caption{Velocity, turbulent kinetic energy and turbulent dissipation rate profiles in Stable ABL}
+	\label{fig:stableFullcasesProfile}
+\end{figure}

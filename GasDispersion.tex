@@ -1,0 +1,572 @@
+%!TEX root = ./thesis.tex
+\graphicspath{{Figs/Falcon/}{Figs/Burro9/}{Figs/DAT223/}{Figs/DA0120/}{Figs/Burro/}{Figs/BurroFigs/}}
+%%%
+\nomtypeA{FLACS}{FLame ACceleration Simulator}
+\nomtypeA{FDS}{Fire Dynamics Simulator}
+
+\chapter{Atmospheric boundary layer gas dispersion}
+In this Chapter, the gas dispersion simulations using OpenFOAM will be validated using wind tunnel tests and field tests. The test case name will be formatted as \bera{testName}. 
+
+FDS (Fire Dynamics Simulator) \cite{McGrattan2013} is a low Mach number code using LES turbulence model. FDS uses a second-order accurate finite-difference approximation to the governing equations on a series of connected rectilinear meshes. The flow variables are updated in time using an explicit second-order Runge-Kutta scheme. OpenFOAM concentration results are compared with FDS data extracted from \cite{Mouilleau2009}.
+
+SPMs from OpenFOAM results will be compared with FLACS (FLame ACceleration Simulator) \cite{Hanna2004, Hansen2010a}, a commercial CFD software used for explosion modelling and atmospheric dispersion modelling within the field of industrial safety and risk assessment.
+
+\section{Dense gas dispersion in wind tunnel tests}
+\subsection{Hamburg wind tunnel test}
+Small scaled atmospheric boundary layer was conducted at the University of Hamburg to investigate the dispersion of instantaneous and continuous of heavy gas releases. The test section of the open-circuit wind tunnel has the dimensions of \SI{1.5x1.0x4.0}{\meter}. The flow was in flat floor or disturbed by the presence of obstacles. An adjustable ceiling is utilized to establish a zero pressure gradient boundary layer. \textcite{Konig-Langlo1991} derived from the wind tunnel data the lower flammability limit (LFL) distances for different obstacle configuration including the worst case, i.e. an along wind street canyon, semi-circular wall as well as unobstructed terrain. 
+
+Dimensional analysis was used to derive similarity laws to match small-scale wind tunnel data and full-scale desired data. For instantaneous release, the resulted length $L_{ci}$, time $T_{ci}$ and velocity $U_{ci}$ scales are \cite{Konig-Langlo1991}:
+\begin{equation}
+\begin{aligned}
+L_{ci} = V_0^{1/3} \\
+T_{ci} = \left( \frac{L_{ci}}{g'} \right)^{1/2} \\
+U_{ci} = \left( L_{ci} g' \right)^{1/2}
+\end{aligned}
+\end{equation}
+
+Similarly, the resulted length $L_{cc}$, time $T_{cc}$ and velocity $U_{cc}$ scales for continuous release are:
+\begin{equation}
+\begin{aligned}
+L_{cc} = \left( \frac{\dot{V}_0^2}{g'} \right)^{1/5} \\
+T_{cc} = \left( \frac{\dot{V}_0}{g'^3} \right)^{1/5}  \\
+U_{cc} = \left( \dot{V}_0 g'^2 \right)^{1/5}
+\end{aligned}
+\end{equation}
+
+\paragraph{Flat, unobstructed tests}
+Two tests \bera{DA0120} and \bera{DAT223}, which are included in MEP, are used to validate OpenFOAM solver in prediction of dense gas dispersion over a flat, unobstructed terrain in simulated neutral ABL. 
+
+In \bera{DA0120} and \bera{DAT223} tests, continuous source of \ce{SF6} gas was released in flat terrain without obstructions. The gas is injected from the perforated disk with diameter approximately \SI{7}{\cm}. Aspirated hot-wire probes are used to measure gas concentration at the ground level at various locations. Long averaging times peak concentration data is compared between predicted simulation and reported experiment data. These tests parameters are summarised in Table~\ref{tab:HamUnobsParams}.
+\begin{table}[h!]
+	\caption{Hamburg flat, unobstructed test case parameters} \label{tab:HamUnobsParams}
+	\centering
+	\begin{tabular}{lrrr}
+		\toprule
+		&Unit &\bera{DA0120} &\bera{DAT223} \\
+		\midrule
+		$L_{cc}$ &$m$ &0.00718 &0.01367 \\
+		$T_{cc}$ &$s$ &0.01333 &0.01839 \\
+		Substance  & &\ce{SF6} &\ce{SF6} \\
+		Density &$kg/m^3$ &6.27 &6.27 \\
+		Surface roughness &$m$ &0.0001 &0.0001 \\
+		Wind speed &$m/s$ &0.54 &0.74 \\
+		Reference height &$m$ &0.00718 &0.01367 \\
+		Ambient temperature &$^0C$ &20 &20 \\
+		Source diameter &$m$ &0.07 &0.07 \\
+		Spill rate &$kg/s$&0.0001743 &0.000872\\
+		\bottomrule
+	\end{tabular}
+\end{table}
+
+\subsection{Numerical setting}
+Effect of turbulent Schmidt number $Sc_t$ is investigated in dense gas dispersion. Three test cases are summarised in Table~\ref{tab:Ham_Sct_cases}. Effect of turbulent models is examined by applying modified $k-\epsilon$ and SST $k-\omega$ which are already validated in simulating ABL over flat terrain in Section~\ref{sec:neutralABL}.
+\begin{table}[h!]
+	\caption{Turbulent Schmidt number $Sc_t$ in Hamburg tests} \label{tab:Ham_Sct_cases}
+	\centering
+	\begin{tabular}{lrrr}
+		\toprule
+		&Case 1 &Case 2 &Case 3\\
+		\midrule
+		label &FOAM\_ORIG &FOAM\_Sc07 &FOAM\_Sc03\\
+		$Sc_t$ &1	&0.7 &0.3 \\
+		\bottomrule
+	\end{tabular}
+\end{table}
+
+Firstly, the steady simulation using \bera{bouyantSimpleFoam} is performed to establish the steady ABL flow prior to the dense gas release. The solver accounting to buoyancy effects \bera{bouyantSimpleFoam} is used for taking care of density stratification presenting in dense gas flow. The atmospheric inlet profiles are specified by Monin–Obukhov similarity theory with parameters in Table~\ref{tab:HamUnobsParams}. Two different turbulent models: standard $k-\epsilon$ with modifications and SST $k-\omega$ are used to study the ability to simulate the atmospheric boundary of each model. Secondly, the transient simulation is performed using steady simulation solutions as initial fields. A modified version of \bera{rhoReactingBouyantFoam} is studied to model multi-species flow where mixture considered are air and dense gas \ce{SF6}. The wind tunnel tests were conducted in isothermal condition, therefore constant thermal and transport properties are used for both gases. 
+
+In simulations of \bera{DA0120} and \bera{DAT223} tests, the discretisation schemes and linear solver setting are the same as in the simulation of neutral ABL (Section~\ref{sec:neutralABL}).
+
+\subsection{Results and discussion of gas dispersion in wind tunnel tests}
+\subsubsection{Peak concentration prediction}
+The steady state plumes of \bera{DAT0120} and \bera{DAT223} tests are plotted in Figure~\ref{fig:Ham0120Contour} and \ref{fig:Ham223Contour} respectively. Under higher release volume flow rate and higher wind speed, \bera{DAT223} plume are shown for wider and higher concentration in downwind zone.
+\begin{figure}[htbp]
+	\centering
+	\includegraphics[width=0.9\textwidth]{SF6Contour.png}
+	\caption{\bera{DA0120} contour of gas concentration} \label{fig:Ham0120Contour}
+\end{figure}
+\begin{figure}[htbp]
+	\centering
+	\includegraphics[width=0.9\textwidth]{DAT223GasContour.png}
+	\caption{\bera{DAT223} contour of gas concentration} \label{fig:Ham223Contour}
+\end{figure}
+
+The predicted and measured peak gas concentration are compared at several distances from the spill in Figure~\ref{fig:Ham0120ConMax}. Turbulent Schmidt number $Sc_t$ has significant effect in predicting dense gas dispersion. The original \bera{rhoReactingBouyantFoam} code, with assume species diffusivity equals to viscosity, is shown to over-predicted concentration with factor of three. New code with implement variable species diffusivity by means of reading $Sc_t$ from file is implemented. The value of $Sc_t = 0.3$ is shown to perfectly matched with the experimental data, however there was a slightly acceptable over-predicted species concentration at a point near the source release.  
+\begin{figure}[htbp]
+	\centering
+	\includegraphics[width=0.99\textwidth]{DA0120ConMax.pdf}
+	\caption{Peak concentration \bera{DA0120}} \label{fig:Ham0120ConMax}
+\end{figure}
+
+Results from \bera{DAT223} simulation are presented in Figure~\ref{fig:Ham223ConMax}. Satisfactory over predicted peak concentration is similar to \bera{DA0120} case.
+\begin{figure}[htbp]
+	\centering
+	\includegraphics[width=0.95\textwidth]{DAT223ConMax.pdf}
+	\caption{Peak concentration \bera{DAT223}} \label{fig:Ham223ConMax}
+\end{figure}
+
+\subsubsection{Point-wise concentration}
+Figure~\ref{fig:Ham0120ConPoint} presents gas concentration at downwind distance $X=1.84$ of \bera{DA0120} test. The simulation can reproduce the averaged gas concentration. The first incidence time of gas concentration is earlier than observed in experiments. However, the time reaching averaged maximum concentration is well predicted. 
+\begin{figure}[h!]
+	\centering
+	\includegraphics[width=0.8\textwidth]{DA0120500.pdf}
+	\caption{Concentration at $X=1.84$ of \bera{DA0120}} \label{fig:Ham0120ConPoint}
+\end{figure}
+
+\subsubsection{Statistical model evaluation}
+Statistical performance of OpenFOAM results are compared with specified commercial code for gas dispersion FLACS in Table~\ref{tab:HamUnobs_SPMs}. FLACS results are extracted from \cite{Hansen2010a}. The performance of current OpenFOAM code is considerably better than FLACS. Even though larger tests were validated in FLACS, proposed model in OpenFOAM is a promising tool for further investigation of atmospheric gas dispersion.  
+\begin{table}[h!]
+	\caption{Statistical performance measures of Hamburg unobstructed tests} \label{tab:HamUnobs_SPMs}
+	\centering
+	\begin{tabular}{lrrrrr}
+		\toprule
+		&MRB &RMSE &FAC2 &MG  &VG   \\
+		\midrule
+		Acceptable range &[-0.4,0.4] &< 2.3 &[0.5, 2] &[0.67, 1.5] &<3.3 \\
+		Perfect value &0 &0 &1 &1 &1 \\
+		FLACS \cite{Hansen2010a}	&0.25 &0.29 &0.89 &1.34  &1.61 	\\
+		$FOAM$ (current study) &-0.06 &0.02 &1.07 &1.06 &1.02 \\
+		\bottomrule
+	\end{tabular}
+\end{table}
+
+\section{Dense gas dispersion over flat terrain}
+Four tests in Burro series included in MEP are \bera{Burro3}, \bera{Burro7}, \bera{Burro8} and \bera{Burro9}. These four tests are simulated in this Section for validation of the proposed model on gas dispersion over flat terrain. \bera{Burro7} and \bera{Burro9} tests were conducted under neutral ABL. Of all tests, \bera{Burro7} had the largest spill volume and the longest spill duration. \bera{Burro3} test was conducted under the most unstable atmospheric conditions. \bera{Burro8} test was conducted in the most stable atmospheric condition and the lowest wind speed. The detail description of Burro series is summarised in Section~\ref{sec:validationData}. 
+
+\subsection{Domain and grid generation}
+ Without wind direction fluctuation, the flow can be closely assumed symmetric, therefore, only half of the flow will be modelled. However, the symmetric plane of the flow does not coincide with the centreline of instrument arrays. Therefore, a conversion of the point position should be made when comparing the point-wise data of the simulation and experimental measurements. Location of instruments in simulated domain $(x_1, y_1)$ can be calculated from instruments location $(x_2, y_2)$ according to the deflection angle between the wind direction and the centreline of instrument arrays $\theta_{wind}$ as: 
+\begin{equation}
+\begin{aligned}
+x_2 =& x_1 \cos \theta_{wind} + y_1 \sin \theta_{wind} \\
+y_2 =& y_1 \cos \theta_{wind} - x_1 \sin \theta_{wind}
+\end{aligned}
+\end{equation}
+
+The arcs of \SI{57}{\meter}, \SI{140}{\meter}, \SI{400}{\meter} and \SI{800}{\meter} gas instruments for each height, centreline of instrument arrays, the transformed points used in the \bera{Burro9} test simulation and centerline of simulation domain are plotted in Figure~\ref{fig:burroInstrumentArrays}.
+\begin{figure}[htbp]
+	\centering
+	\includegraphics[width=0.8\textwidth]{Burro9GasArray.pdf}
+	\caption{Position of gas instruments (EXP) and their transformed points in simulation domain (FOAM) plotted for \bera{Burro9} test} \label{fig:burroInstrumentArrays}
+\end{figure}
+
+The suitable type of the mesh mainly depends on the type of physics solved. For the dispersion of dense gas cloud simulation, structured mesh with hexahedral cells is proven to be much more computationally effective than unstructured mesh using tetrahedral cells \cite{Giannissi2013}. The mesh is refined in gas dispersion region to accurately solving the flow there. An example of the mesh used for \bera{Burro9} simulation can be shown in Figure~\ref{fig:Mesh}. The adequate number of nodal points used for the study can be determined using the mesh independence study \cite{Luketa-Hanlin2007} where effects of mesh on solution of peak gas concentration are investigated. Three different meshes which the number of nodes vary with the factor of two are compared. The best optimum mesh achieved is used for further study. All computational domain and mesh parameters are summarised in Table~\ref{tab:burroMeshParams}.
+\begin{table}[h!]
+	\caption{Burro test computational domain and mesh parameters} \label{tab:burroMeshParams}
+	\centering
+	\begin{tabular}{p{0.3\textwidth}p{0.2\textwidth}p{0.2\textwidth}p{0.2\textwidth}}  
+		\toprule
+		& Mesh 1	& Mesh 2	& Mesh 3		\\
+		\midrule
+		Domain region &\multicolumn{3}{l}{[(-150, 0, 50), (850, 300, 50)]} \\
+		Refined region &\multicolumn{3}{l}{[(-100, 0, 5) , (400, 100, 5)]} \\
+		Aspect ratio		&20 & & 	\\
+		Vertical cell expansion ratio &1.075 	& & 	\\		
+		Mesh size (\si{\meter})		&10	&5 &2 	\\
+		Mesh refined size (\si{\meter})	&5 &2 &1 \\
+		\bottomrule
+	\end{tabular}
+\end{table}
+
+\begin{figure}[htbp]
+	\centering
+	\includegraphics[width=0.8\textwidth]{meshBurro8.png}
+	\caption{The mesh using for \bera{Burro9} test} \label{fig:Mesh}
+\end{figure}
+
+\subsection{Boundary conditions}
+\paragraph{Atmospheric air inlet boundary}
+Monin-Obukhov similarity theory is used to specify the wind velocity and temperature profile at the inlet. All required meteorological parameters are tabulated in Table~\ref{tab:burro_params}.
+\begin{table}[h!]
+	\caption{Burro tests meteorological parameters} \label{tab:burro_params}
+	\centering
+	\begin{tabular}{lrrrr}
+		\toprule
+		& \bera{Burro3}	& \bera{Burro7}	& \bera{Burro8} & \bera{Burro9}		\\
+		\midrule
+		$u_*$	& 0.249 & 0.372 & 0.074 & 0.252	\\
+		$z_0$ 	& 2E-4 & 2E-4 & 2E-4 & 2E-4 \\
+		$u_{ref}$	& 5.4 & 8.4 & 1.8 & 5.7 \\
+		$z_{ref}$ 	& 2 & 2 & 2 & 2 \\
+		$T_2$		& 33.8 &33.7 &33.1 &35.4 \\
+		$T_*$		&-0.65 &-0.23 &0.145 &-0.1 \\
+		$q_s$		&154 &41 &2.2 &-10 \\
+		$L_{MO}$			&-9.06 &-114 &16.5 &-140\\
+		\bottomrule
+	\end{tabular}
+\end{table}
+
+\paragraph{Vapour gas inlet} \label{sec:gas-inlet}
+Vapour gas inlet condition is usually obtained from separate source term modelling. There is not much information about the vaporisation of LNG from the experimental data. Therefore, uncertainty arises at the setting of this condition. 
+
+Mass flux of LNG or the LNG vaporization rate is used to derive source term of LNG spilling. \textcite{Luketa-Hanlin2007} reviewed a number of experiments conducting to estimate the LNG vaporization rate of the spill on water, the range of this value varied between approximately \SIrange[range-units=single]{0.029}{0.195}{\kilogram\per\square\meter\per\second}. In the case of Burro test, the simulated vaporisation rate is assumed to be $m'' = \SI{0.167}{\kilogram\per\square\meter\per\second}$. Density of LNG vapour is approximate as of \ce{CH4} at boiling point $\rho_{LNG}=\SI{1.76}{\kilogram\per\cubic\meter}$ \cite{Luketa-Hanlin2007}. 
+The spill diameter is derived from this vaporization rate, reported spill mass $m$ and duration $\Delta t$:
+\begin{equation}
+	D = \sqrt{\frac{4m}{\pi m'' \Delta t}}
+\end{equation}
+
+Volume spill rate is used as gas inlet condition:
+\begin{equation}
+\dot{V} = \frac{m}{\rho \Delta t}
+\end{equation}
+
+LNG spill variables used in simulation are tabulated in Table~\ref{tab:burro_releaseVar}.
+\begin{table}[h!]
+	\caption{Burro test spill conditions} \label{tab:burro_releaseVar}
+	\centering
+	\begin{tabular}{lrrrr}  
+		\toprule
+		& \bera{Burro3}	& \bera{Burro7}	& \bera{Burro8} & \bera{Burro9}		\\
+		\midrule
+		Vaporization rate (\si{\kilogram\per\square\meter\per\second}) & 0.167 & 0.167 & 0.167 & 0.167\\
+		Spill velocity (\si{\meter\per\second}) &0.024 &0.024 &0.024 &0.024 \\	
+		Spill mass (\si{\kilogram}) 		& 14712 	& 17289 	& 12453 & 10730 	\\
+		Spill duration (\si{\second}) 		& 167 	& 174 	& 107 & 79 	\\
+		Volume spill rate (\si{\cubic\meter\per\second}) &50.05 &56.46 &66.13 &77.17 \\
+		Spill pool diameter (\si{\meter}) 		& 25.9 	& 27.5 	& 29.9 & 32.2 	\\
+		\bottomrule
+	\end{tabular}
+\end{table}
+
+\paragraph{Ground boundary conditions}
+Three different models of heat transfer from the ground are used to study their effect in numerical results, which summarised in Table~\ref{tab:Burro_wallHeat_cases}. For constant heat flux case, the value of $\SI{200}{W/m^2}$ is used.
+\begin{table}[h!]
+	\caption{Wall thermal boundary conditions in Burro tests} \label{tab:Burro_wallHeat_cases}
+	\centering
+	\begin{tabular}{lrrr}
+		\toprule
+		&Case 1 &Case 2 &Case 3\\
+		\midrule
+		Heat transfer model &Adiabatic wall	&Constant Heat Flux &Wall temperature \\
+		Label (Fig.~\ref{fig:Burro9HeatTest})&Adiabatic &fixedFlux &fixedTem \\
+		\bottomrule
+	\end{tabular}
+\end{table}
+
+\paragraph{\bera{top}, \bera{side} and \bera{back} boundaries}
+Assuming static pressure are constant throughout the domain, a constant \bera{prghPressure} is set at \bera{top} boundary condition.
+\bera{prghPressure} provides static pressure condition for \bera{p\_rgh} field:
+\begin{equation}
+ p\_rgh = p - \rho g h
+\end{equation}
+
+Velocity  and epsilon fluxes are also placed at \bera{top} boundary according to Equation~(\ref{eq:RichardsTopBCs}). \bera{zeroGradient} are specified for all variables at \bera{side} and \bera{back} boundaries.
+
+\subsection{Thermophysical models}
+CoolProp, an open-source thermophysical property library \cite{Bell2014} is used to derive incompressible thermal physical properties for air and \ce{CH4} to take into account of variable gas properties due to temperature changes. Coefficients to derive gas properties as the function of temperature according to Equation~(\ref{eq:foam_icoPoly}) are presented in Table~\ref{tab:burro_thermalVar}.
+\begin{equation} 
+\rho = \sum_{i}^{N} a_i  T^{i} \tag{\ref{eq:foam_icoPoly} revisited}
+\end{equation}
+
+\begin{table}[h!]
+	\caption{Coefficients (Eq.~(\ref{eq:foam_icoPoly})) of gas thermophysical properties used in Burro tests simulation} \label{tab:burro_thermalVar}
+	\centering
+	\begin{tabular}{llrrrr}  
+		\toprule
+		& &$a_0$	&$a_1$	&$a_2$ &$a_3$		\\
+		\midrule
+		Air &$\rho$ &9.205 &-0.094 &0.0005 &-1.328E-6\\
+		 &$c_p$ 		&1092.096 	&-1.004 	&0.0042 &-7.691E-6 	\\	
+		 &$\mu$ 		&7.056E-7 	&6.9536E-8 	&-3.432E-11 & 	\\
+		 &$\kappa$ 		&0.00333 	&7.38E-5 	& & 	\\
+		\ce{CH4} &$\rho$ &5.405 &-0.057 &0.0003 &8.3E-7\\
+		&$c_p$ 		&3798.83 	&-33.3575 	&0.273 &-0.0012 	\\	
+		&$\mu$ 		&-3.73E-7 	&4.513E-8 	&-2.12E-11 & 	\\
+		&$\kappa$ 		&-0.0073 	&0.000145 	& & 	\\
+		\bottomrule
+	\end{tabular}
+\end{table}
+
+\subsection{Numerical setting}
+The steady simulation uses the atmospheric inlet specified by Monin–Obukhov similarity theory. Two different turbulent models: standard $k-\epsilon$ with modifications and SST $k-\omega$ are used to study the ability to simulate the atmospheric boundary of each model.
+
+The transient simulation is divided into two steps. During the spill duration, from the time of zero to the time of spill ends and after spill ends, which the inlet is treated as the solid wall boundary.
+
+\subsection{Results and discussion of gas dispersion over flat terrain}
+\subsubsection{The steady simulation}
+Profiles of velocity and turbulence quantities are sampled at the \bera{outlet} boundary and compared with Monin-Obukhov theory profiles which are used as inlet boundary conditions. The steady state simulation of ABL with $k-\epsilon$ shows that wind velocity and turbulence profiles are accurately reproduced as presented in Figure~\ref{fig:Burro9ABL}. A small value difference decay of $k$ (less than $10\%$) are shown for SST $k-\omega$ at the outlet.
+\begin{figure}[htbp]
+	\centering
+	\includegraphics[width=0.8\textwidth]{Burro9ABLProfiles.pdf}
+	\caption{ABL profiles of \bera{Burro9}} \label{fig:Burro9ABL}
+\end{figure}
+
+A decay of turbulence kinetic energy of SST $k-\omega$ has not shown in the previous study due to the fact that the domain is extended to a large value downstream in this full scale experiment. A successfulness of modified $k-\epsilon$ model proved that the proposed modelled can adequately reproduce the Monin-Obukhov ABL profiles in full scale simulation.
+ 
+\subsubsection{Mesh sensitivity study}
+Since maximum gas concentration at specific arrays downwind is in concerned. Maximum concentration at the arcs of \SI{57}{\meter}, \SI{140}{\meter}, \SI{400}{\meter} and \SI{800}{\meter} downwind are used as parameters for mesh sensitivity study. Three meshes with refined factors as summarised in Table~\ref{tab:burroMeshParams} are used to simulate LNG gas dispersion at adiabatic thermal wall condition. Results of four peak arc-wise concentrations are plotted in Figure~\ref{fig:Burro9MeshTest}.  
+\begin{figure}[h!]
+	\centering
+	\includegraphics[width=0.8\textwidth]{Burro9MeshTest.pdf}
+	\caption{\bera{Burro9} mesh sensitivity study} \label{fig:Burro9MeshTest}
+\end{figure}
+
+Increasingly mesh refinements help to solve maximum concentration more accurately. The difference values between meshes are significantly reduced. Due to computational restriction, Mesh 3 parameters (Table~\ref{tab:burroMeshParams}) will be used in the following study.
+
+\subsubsection{Ground heat transfer sensitivity study}
+Three different ground heat transfer models as in Table~\ref{tab:Burro_wallHeat_cases} are used to examine the effect of ground heat in predicting peak gas concentration. Plotted in Figure~\ref{fig:Burro9HeatTest} are results from this study. 
+\begin{figure}[h!]
+	\centering
+	\includegraphics[width=0.8\textwidth]{Burro9HeatTest.pdf}
+	\caption{\bera{Burro9} ground heat transfer study} \label{fig:Burro9HeatTest}
+\end{figure}
+
+The adiabatic case results a better prediction to experiment data than fixed flux and fixed temperature cases. However, all predictions are under-predicted. These may be due to buoyancy effect is over-predicted so the gas concentration at downwind arcs (at 400 and 800 m) are zero in the fixed flux case.
+
+\subsubsection{Turbulence Schmidt number sensitivity study}
+Two value of $Sc_t = 1$ and $Sc_t = 0.3$ are used for studying the sensitivity of proposed model on predicting maximum gas concentration. Results are shown in Figure~\ref{fig:Burro9ScTest}.
+
+\begin{figure}[htbp]
+	\centering
+	\includegraphics[width=0.8\textwidth]{Burro9ScTest.pdf}
+	\caption{\bera{Burro9} turbulent Schmidt number $Sc_t$ study} \label{fig:Burro9ScTest}
+\end{figure}
+
+$Sc_t = 0.3$ used previously in wind tunnel dense gas dispersion are shown to be appropriate in accurate prediction of maximum gas concentration in \SI{57}{\meter} array and \SI{140}{\meter} array. Further downwind, at \SI{400}{\meter} array and \SI{800}{\meter} array, there is not much significant difference between these two values. 
+  
+\subsubsection{Peak concentration prediction} \label{sec:arcwise-prediction}
+The comparison of OpenFOAM, FDS, and experimental results for \bera{Burro9} test is shown in Figure~\ref{fig:Burro9ConMax}. FDS is over-predicted, while OpenFOAM is under-predicted. However, OpenFOAM is accurate in prediction at \SI{800}{\meter} arc.
+
+\begin{figure}[htbp]
+	\centering
+	\includegraphics[width=0.8\textwidth]{Burro9ConMax.pdf}
+	\caption{Maximum arc-wise concentration \bera{Burro9}} \label{fig:Burro9ConMax}
+\end{figure}
+
+Maximum concentration at four arc-wise sensor arrays at \SI{57}{\meter}, \SI{140}{\meter}, \SI{400}{\meter} and \SI{800}{\meter} of other three Burro tests are further compared with experimental data to show the overall performance of FOAM  in Figures~\ref{fig:Burro3ConMax}, \ref{fig:Burro7ConMax} and \ref{fig:Burro8ConMax} respectively. Over-predictions are observed in all these simulations.
+
+Figure~\ref{fig:Burro3ConMax} presents peak concentrations of Burro3 test, which conducted in unstable ABL. The peak concentration at \SI{800}{\meter} arc is well predicted. However, all other arcs are over-predicted. The over-prediction is higher at \SI{140}{\meter} arc and smaller at \SI{57}{\meter} and \SI{400}{\meter} arcs.
+\begin{figure}[htbp]
+	\centering
+	\includegraphics[width=0.8\textwidth]{Burro3ConMax}
+	\caption{Maximum arc-wise concentration \bera{Burro3}} \label{fig:Burro3ConMax}
+\end{figure}
+
+Under unstabe to neutral ABL stability in \bera{Burro7}, the over-prediction are shown in all arcs as in Figure~\ref{fig:Burro7ConMax}. The over-prediction is higher at \SI{57}{\meter} arc and smaller at \SI{140}{\meter} and \SI{400}{\meter} arcs. The peak concentration at \SI{800}{\meter} is however well predicted. 
+\begin{figure}[htbp]
+	\centering
+	\includegraphics[width=0.8\textwidth]{Burro7ConMax}
+	\caption{Maximum arc-wise concentration \bera{Burro7}} \label{fig:Burro7ConMax}
+\end{figure}
+
+Under stable stratified ABL at \bera{Burro8} test, the prediction at near source region \SI{57}{\meter} is under-predicted and over-predicted in other arcs as seen in Figure~\ref{fig:Burro8ConMax}.
+\begin{figure}[htbp]
+	\centering
+	\includegraphics[width=0.8\textwidth]{Burro8ConMax}
+	\caption{Maximum arc-wise concentration \bera{Burro8}} \label{fig:Burro8ConMax}
+\end{figure}
+
+\subsubsection{Isosurface contour}
+The vertical isosurface contours at $X = 140$ are reported in Figure~\ref{fig:BurroIsoConX140}. Under-predicted cloud height are shown in all tests indicating that cloud buoyancy is not correctly solved. The sensitivity of the model on atmospheric stability can be seen in more flatten profile in \bera{Burro8} test which under stable condition.
+\begin{figure}[htbp]
+	\centering
+	\begin{subfigure}[]{0.49\textwidth}
+		\includegraphics[width=\textwidth]{Burro3SimConX140}
+	\end{subfigure} 
+	~
+	\begin{subfigure}[]{0.49\textwidth}
+		\includegraphics[width=\textwidth]{Burro3ExpConX140}
+	\end{subfigure}
+	%a blank line to force the subfigure onto a new line
+	
+	\begin{subfigure}[]{0.49\textwidth}
+		\includegraphics[width=\textwidth]{Burro7SimConX140}
+	\end{subfigure} 
+	~
+	\begin{subfigure}[]{0.49\textwidth}
+		\includegraphics[width=\textwidth]{Burro7ExpConX140}
+	\end{subfigure}
+	%a blank line to force the subfigure onto a new line
+	
+	\begin{subfigure}[]{0.49\textwidth}
+		\includegraphics[width=\textwidth]{Burro8SimConX140}
+	\end{subfigure} 
+	~
+	\begin{subfigure}[]{0.49\textwidth}
+		\includegraphics[width=\textwidth]{Burro8ExpConX140}
+	\end{subfigure}
+	%a blank line to force the subfigure onto a new line
+	
+	\begin{subfigure}[]{0.49\textwidth}
+		\includegraphics[width=\textwidth]{Burro9SimConX140}
+	\end{subfigure} 
+	~
+	\begin{subfigure}[]{0.49\textwidth}
+		\includegraphics[width=\textwidth]{Burro9ExpConX140}
+	\end{subfigure}
+	\caption{Vertical isosurface at X = 140, Left: Simulation, Right: Experimental data, From top to bottom: \bera{Burro3}, \bera{Burro7}, \bera{Burro8} and \bera{Burro9}}
+	\label{fig:BurroIsoConX140}
+\end{figure}
+
+Horizontal isosurface contours at height Z = 1 is shown in Figure~\ref{fig:BurroIsoConZ1}. The gas concentration contour is plotted side by side with the contour analysing from experiment data, where the left is resulted from interpolating concentration at some concentration data points (presented in plots by dot black points), the right is from experimental data. Overall, the cloud widths are considerably well predicted. However some special flow structure, for example, bifurcating structure in low wind, stable ABL condition in \bera{Burro8} test is not well replicated. The bifurcated structure is shown in the simulation but less significant than that observed from experiment. Over-predicted downwind concentration are observed in all four tests. Besides, it can be seen that the gas move downwind faster. The high concentration can still be found very far from the source than the validation data.
+\begin{figure}[htbp]
+	\centering
+	\begin{subfigure}[]{0.49\textwidth}
+		\includegraphics[width=\textwidth]{Burro3SimConZ1}
+	\end{subfigure} 
+	~
+	\begin{subfigure}[]{0.49\textwidth}
+		\includegraphics[width=\textwidth]{Burro3ExpConZ1}
+	\end{subfigure}
+	%a blank line to force the subfigure onto a new line
+	
+	\begin{subfigure}[]{0.49\textwidth}
+		\includegraphics[width=\textwidth]{Burro7SimConZ1}
+	\end{subfigure} 
+	~
+	\begin{subfigure}[]{0.49\textwidth}
+		\includegraphics[width=\textwidth]{Burro7ExpConZ1}
+	\end{subfigure}
+	%a blank line to force the subfigure onto a new line
+	
+	\begin{subfigure}[]{0.49\textwidth}
+		\includegraphics[width=\textwidth]{Burro8SimConZ1}
+	\end{subfigure} 
+	~
+	\begin{subfigure}[]{0.49\textwidth}
+		\includegraphics[width=\textwidth]{Burro8ExpConZ1}
+	\end{subfigure}
+	%a blank line to force the subfigure onto a new line
+	
+	\begin{subfigure}[]{0.49\textwidth}
+		\includegraphics[width=\textwidth]{Burro9SimConZ1}
+	\end{subfigure} 
+	~
+	\begin{subfigure}[]{0.49\textwidth}
+		\includegraphics[width=\textwidth]{Burro9ExpConZ1}
+	\end{subfigure}
+	\caption{Horizontal isosurface at Z = 1; Left: Simulation, Right: Experimental data; From top to bottom:(a) \bera{Burro3} (b) \bera{Burro7} (c) \bera{Burro8} (d) \bera{Burro9}}
+	\label{fig:BurroIsoConZ1}
+\end{figure}
+
+\subsubsection{Point-wise profiles}
+For further understanding the result, the point concentration from experiment will be compared to the simulated results. The first point is selected near the source, which is \SI{57}{\meter} downwind and the second point is \SI{140}{\meter} downwind.
+
+Figure~\ref{fig:Burro9Con140} is the plot of gas concentration at \SI{1}{\meter} elevation at \SI{140}{\meter} downwind of \bera{Burro9}. It shows the good temporal trend of the simulation to the validation data. The concentration data is fairly matched except the peak duration (from 75 s to 100 s). The peak concentration is underestimated four times of the experimental data. The temporal trend however remains good. The concentration magnitude is really matching well with the validation data.
+\begin{figure}[htbp]
+	\centering
+	\includegraphics[width=0.8\textwidth]{Burro9ConPtX140.pdf}
+	\caption{Point concentration at \SI{140}{\meter} of \bera{Burro9}} \label{fig:Burro9Con140}
+\end{figure}
+
+For other tests in Burro series, gas concentration at \SI{1}{\meter} elevation are plotted with data from experiments. Temporal variation of gas concentration at \SI{140}{\meter} downwind of \bera{Burro3}, \bera{Burro9} tests are presented in Figures~\ref{fig:Burro3Con140} and \ref{fig:Burro7Con140} respectively. These tests are in unstable ABL, and over-predictions are seen in both tests. 
+
+\begin{figure}[htbp]
+	\centering
+	\includegraphics[width=0.8\textwidth]{Burro3ConPtX140}
+	\caption{Point concentration at \SI{140}{\meter} of \bera{Burro3}} \label{fig:Burro3Con140}
+\end{figure}
+
+\begin{figure}[htbp]
+	\centering
+	\includegraphics[width=0.8\textwidth]{Burro7ConPtX140}
+	\caption{Point concentration at \SI{140}{\meter} of \bera{Burro7}} \label{fig:Burro7Con140}
+\end{figure}
+
+For \bera{Burro8} test, under stable ABL, the gas concentration at \SI{57}{\meter} downwind is shown in Figure~\ref{fig:Burro8Con57}. The model is shown to well-predicted the stable concentration at later time but can not reproduce the peak concentration periods.
+\begin{figure}[h!]
+	\centering
+	\includegraphics[width=0.8\textwidth]{Burro8ConPtX57}
+	\caption{Point concentration at \SI{57}{\meter} of \bera{Burro8}} \label{fig:Burro8Con57}
+\end{figure}
+
+\subsubsection{Statistical model evaluation}
+Overall statistical performance of OpenFOAM results are compared with FLACS with data extracted from \cite{Hansen2010a} in Table~\ref{tab:Burro_SPMs}. The predictions do not match all SMPs, however some important SPMs are in acceptable range. All gas concentration are within a factor of two (FAC2=1), better than FLACS (FAC2 = 0.94). 
+\begin{table}[h!]
+	\caption{Statistical performance measures of Burro tests} \label{tab:Burro_SPMs}
+	\centering
+	\begin{tabular}{lrrrrr}
+		\toprule
+		&MRB &RMSE &FAC2 &MG  &VG   \\
+		\midrule
+		Acceptable range &[-0.4,0.4] &< 2.3 &[0.5, 2] &[0.67, 1.5] &<3.3 \\
+		Perfect value &0 &0 &1 &1 &1 \\
+		FLACS \cite{Hansen2010a}	&0.16 &0.12 &0.94 &1.18  &1.14 	\\
+		FOAM \bera{Burro9}	&0.44 &0.23 &1 &0.63 &1.28	\\
+		\bottomrule
+	\end{tabular}
+\end{table}
+
+\section{Dense gas dispersion over obstructed terrain}
+Three Falcon tests included in MEP namely \bera{Falcon1}, \bera{Falcon3} and \bera{Falcon4} are simulated using OpenFOAM to examine the effectiveness of proposed models in simulating field LNG dispersion in presence of obstacles. In all tests, the terrain was flat and the atmospheric stability condition varied as stable or neutral. The detail description of Falcon tests is introduced in Section~\ref{sec:validationData}.
+
+\subsection{Boundary conditions}
+Similarly to Burro tests simulation, Monin-Obukhov similarity theory is used to specify the wind velocity and temperature profile at the inlet. All required meteorological parameters are summarised in Table~\ref{tab:falcon_params}.
+\begin{table}[h!]
+	\caption{Falcon tests meteorological parameters} \label{tab:falcon_params}
+	\centering
+	\begin{tabular}{lrrr}
+		\toprule
+		& \bera{Falcon1}	& \bera{Falcon3}	& \bera{Falcon4}		\\
+		\midrule
+		Stability & G & D & D-E \\
+		$L_{MO}$		& 4.96 & -422 & 69.4	\\
+		$u_*$	& 0.061 & 0.305 & 0.369	\\
+		$T_*$	& 0.058 & -0.018 & 0.152	\\
+		$z_0$ 	& 0.008 & 0.008 & 0.008 \\
+		\bottomrule
+	\end{tabular}
+\end{table}
+
+The same approach as Section~\ref{sec:gas-inlet} is used to derive the vapour gas inlet. The LNG vaporization rate is assumed taking the value of $\dot{m} = $\SI{0.167}{\kilogram\per\square\meter\per\second}. The spill diameter is derived from this vaporization rate, reported spill mass $m$ and duration $\delta t$:
+\begin{equation}
+D = \sqrt{\frac{4m}{\pi \dot{m} \delta t}}
+\end{equation}
+
+LNG spill variables used in simulation of Falcon tests are tabulated in Table~\ref{tab:burro_releaseVar}.
+\begin{table}[h!]
+	\caption{Falcon test spill conditions} \label{tab:falcon_releaseVar}
+	\centering
+	\begin{tabular}{rrrr}  
+		\toprule
+		& \bera{Falcon1}	& \bera{Falcon3}	& \bera{Falcon4}		\\
+		\midrule
+		Vaporization rate (\si{\kilogram\per\square\meter\per\second}) & 0.167 & 0.167 & 0.167 \\
+		Spill mass (\si{\kilogram}) 		& 28074 	& 21435 	& 18984  	\\
+		Spill duration (\si{\second}) 		& 131 	& 154 	& 301  	\\
+		Spill pool diameter (\si{\meter}) 		& 19.5 	& 16.0 	& 10.8 	\\
+		\bottomrule
+	\end{tabular}
+\end{table}
+
+\subsection{Results and discussion of gas dispersion over obstructed terrain}
+\subsubsection{Peak concentration prediction}
+Maximum concentration at four arc-wise sensor arrays at \SI{50}{\meter}, \SI{150}{\meter} and \SI{250}{\meter} of the three Falcon tests are compared with experimental data. As seen in Figure~\ref{fig:FalconConMax}, the prediction of maximum concentration are best for \bera{Falcon4} test.
+\begin{figure}[htbp]
+	\centering
+	\begin{subfigure}[]{0.49\textwidth}
+		\includegraphics[width=\textwidth]{Falcon1ConMax}
+		\caption{}
+	\end{subfigure} 
+	~
+	\begin{subfigure}[]{0.49\textwidth}
+		\includegraphics[width=\textwidth]{Falcon3ConMax}
+		\caption{}
+	\end{subfigure}
+	%a blank line to force the subfigure onto a new line
+	
+	\begin{subfigure}[]{0.49\textwidth}
+		\includegraphics[width=\textwidth]{Falcon4ConMax}
+		\caption{}
+	\end{subfigure} 
+	
+	\caption{Maximum arc-wise concentration (a) \bera{Falcon1} (b) \bera{Falcon3} (c) \bera{Falcon4}}
+	\label{fig:FalconConMax}
+\end{figure}
+
+\subsubsection{Statistical model evaluation}
+Statistical performance of OpenFOAM results are compared with FLACS in which data is extracted from \cite{Hansen2010a}. These results are presented in Table~\ref{tab:Falcon_SPMs}. The proposed model simulation results fit all SPMs acceptable range for \bera{Falcon4} test. This shows the superior performance of proposed code in comparison with FLACS when this software as it was unable to predict the peak gas within the factor of two (FAC2 = 0).
+
+\begin{table}[h!]
+	\caption{Statistical performance measures of Falcon tests} \label{tab:Falcon_SPMs}
+	\centering
+	\begin{tabular}{lrrrrr}
+	\toprule
+	&MRB &RMSE &FAC2 &MG  &VG   \\
+	\midrule
+	Acceptable range &[-0.4,0.4] &< 2.3 &[0.5, 2] &[0.67, 1.5] &<3.3 \\
+	Perfect value &0 &0 &1 &1 &1 \\
+	FLACS \cite{Hansen2010a}	&1.35 &1.88 &0 &5.56  &23.65 	\\
+	FOAM \bera{Falcon4}	&-0.34 &0.14 &1 &1.42 &1.15	\\
+	\bottomrule
+	\end{tabular}
+\end{table}

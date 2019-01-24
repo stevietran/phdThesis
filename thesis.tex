@@ -1,0 +1,82 @@
+% ******************************* PhD Thesis Template **************************
+% Please have a look at the README.md file for info on how to use the template
+\documentclass[a4paper,12pt,times,print,index,custombib]{Classes/PhDThesisPSnPDF}
+% Abstract printing
+%\documentclass[a4paper,12pt,times,print,index,custombib,custommargin,abstract]{Classes/PhDThesisPSnPDF}
+
+% ********************************** Preamble **********************************
+\input{Preamble/preamble}
+
+% ************************ Thesis Information & Meta-data **********************
+\input{thesis-info}
+
+% ***************************** Abstract Separate ******************************
+\ifdefineAbstract
+ \pagestyle{empty}
+ \includeonly{Declaration/declaration, Abstract/abstract}
+\fi
+
+% ***************************** Chapter Mode ***********************************
+\ifdefineChapter
+\includeonly{Introduction}
+\fi
+
+% ******************************** Front Matter ********************************
+\begin{document}
+\frontmatter
+
+\maketitle
+
+%\include{Dedication/dedication}
+
+%\include{Declaration/declaration}
+
+%\include{Acknowledgement/acknowledgement}
+
+\include{Abstract/abstract}
+
+% *********************** Adding TOC and List of Figures ***********************
+\tableofcontents
+
+\listoffigures
+
+\listoftables
+
+% Nomenclature
+%{Acronyms} \nomtypeA{Symbol}{Description}		
+%{Subscripts} \nomtypeS{Symbol}{Description}	
+%{Roman Symbols} \nomtypeR{Symbol}{Description}{Units} 	
+%{Greek Symbols} \nomtypeG{Symbol}{Description}{Units}	
+%{Dimensionless Numbers} \nomtypeD{Description}{Definition} 
+%Example for unit format: {\si{\kilogram\per\square\meter\per\second}}
+\printnomenclature[5em]
+
+% Main Matter
+\mainmatter
+\include{Introduction}
+\include{LiteratureReview}
+\include{Methodology}
+\include{ABLSimulation}
+\include{GasDispersion}
+%\include{GasDispersionFalcon}
+%\include{GasDispersionCube}
+\include{Conclusion}
+
+% Backmatter should be commented out, if you are using appendices after References
+%\backmatter
+
+% Bibliography
+\begin{spacing}{0.9}
+%	\printbibliography[heading=bibintoc, title={References}]
+\end{spacing}
+
+% ********************************** Appendices ********************************
+\begin{appendices} % Using appendices environment for more functunality
+%\include{Publication}
+%\include{Appendix2/appendix2}
+\end{appendices}
+
+% *************************************** Index ********************************
+\printthesisindex % If index is present
+
+\end{document}
